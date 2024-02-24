@@ -53,8 +53,8 @@ public class BlueSide extends LinearOpMode {
                 lower,
                 upper,
                 () -> minArea,
-                () -> 410,
-                () -> 426
+                () -> 250,
+                () -> 260
         );
         visionPortal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
@@ -87,7 +87,7 @@ public class BlueSide extends LinearOpMode {
 
 
 
-        TrajectorySequence trajleft = drive.trajectorySequenceBuilder(new  Pose2d(11.3, 59.7, Math.toRadians(-90)))
+        TrajectorySequence trajleft = drive.trajectorySequenceBuilder(new  Pose2d(11.9, 59.7, Math.toRadians(-90)))
                 .splineTo(new Vector2d(5.2,36.6),Math.toRadians(-130))
                 .addDisplacementMarker(20,() -> {
                     System.out.println("Fc");
@@ -182,7 +182,8 @@ public class BlueSide extends LinearOpMode {
 
 
         TrajectorySequence fin = drive.trajectorySequenceBuilder(finaltraj.end())
-                .lineToConstantHeading(new Vector2d( 43.2,60))
+                .back(5)
+                .lineToConstantHeading(new Vector2d( 39.2,60))
                 .lineToConstantHeading(new Vector2d(60,60))
                 .build();
 

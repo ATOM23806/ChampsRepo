@@ -27,6 +27,7 @@ public class RedClose extends LinearOpMode {
     private TramRed redTram;
     private RevColorSensorV3 colorSensorV3;
     private Servo release;
+    private TrajectorySequence finaltraj;
     Slides slides;
     @Override
     public void runOpMode() throws InterruptedException {
@@ -142,14 +143,9 @@ public class RedClose extends LinearOpMode {
                     System.out.println("F");
                 })
                 .build();
-    
-        TrajectorySequence finaltraj = null;
         
         switch (recordedPropPosition) {
             case LEFT:
-                finaltraj = trajleft;
-                break;
-            case UNFOUND:
                 finaltraj = trajleft;
                 break;
             case MIDDLE:
@@ -181,6 +177,9 @@ public class RedClose extends LinearOpMode {
         TrajectorySequence fin = drive.trajectorySequenceBuilder(finaltraj.end())
                 .lineToConstantHeading(new Vector2d( 43.2,-60))
                 .lineToConstantHeading(new Vector2d(60,-60))
+                .addDisplacementMarker(() -> {
+                    release.setPosition(0);
+                })
                 .build();
 
         drive.followTrajectorySequence(fin);

@@ -197,6 +197,9 @@ public class RedFarSide extends LinearOpMode {
                 .lineToConstantHeading(new Vector2d( 39,-36))
                 .lineToConstantHeading(new Vector2d(39,-55))
                 .lineToConstantHeading(new Vector2d(60, -55))
+                .addDisplacementMarker(() -> {
+                    release.setPosition(0);
+                })
                 .build();
 
         drive.followTrajectorySequence(fin);

@@ -25,6 +25,7 @@ public class BlueSideFar extends LinearOpMode {
     private VisionPortal visionPortal;
     private TramBlue blueTram;
     private RevColorSensorV3 colorSensorV3;
+    private TrajectorySequence finaltraj;
     Slides slides;
 
     @Override
@@ -122,25 +123,18 @@ public class BlueSideFar extends LinearOpMode {
         TrajectorySequence trajright = drive.trajectorySequenceBuilder(new  Pose2d(-36.98, 61.77, Math.toRadians(-90)))
                 .splineToSplineHeading(new Pose2d(-47.49, 9.84, Math.toRadians(89.18)), Math.toRadians(269.01))
                 .build();
-
-
-        TrajectorySequence finaltraj = null;
+        
 
         switch (recordedPropPosition) {
             case LEFT:
-                finaltraj = trajright;
-                break;
-            case UNFOUND:
-                finaltraj = trajCenter;
+                finaltraj = trajleft;
                 break;
             case MIDDLE:
                 finaltraj = trajCenter;
                 break;
             case RIGHT:
-                finaltraj = trajleft;
-                break;
-            default:
                 finaltraj = trajright;
+                break;
         }
 
 

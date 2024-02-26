@@ -26,6 +26,7 @@ public class BlueClose extends LinearOpMode {
     private VisionPortal visionPortal;
     private TramBlue blueTram;
     private RevColorSensorV3 colorSensorV3;
+    private TrajectorySequence finaltraj;
     Slides slides;
     @Override
     public void runOpMode() throws InterruptedException {
@@ -86,7 +87,7 @@ public class BlueClose extends LinearOpMode {
 
 
 
-        TrajectorySequence trajleft = drive.trajectorySequenceBuilder(new  Pose2d(11.9, 59.7, Math.toRadians(-90)))
+        TrajectorySequence trajright = drive.trajectorySequenceBuilder(new  Pose2d(11.9, 59.7, Math.toRadians(-90)))
                 .splineTo(new Vector2d(1,36.6),Math.toRadians(-130))
                 .addDisplacementMarker(20,() -> {
                     System.out.println("Fc");
@@ -127,7 +128,7 @@ public class BlueClose extends LinearOpMode {
 
 
 
-        TrajectorySequence trajright = drive.trajectorySequenceBuilder(new  Pose2d(11.3, 59.7, Math.toRadians(-90)))
+        TrajectorySequence trajleft = drive.trajectorySequenceBuilder(new  Pose2d(11.3, 59.7, Math.toRadians(-90)))
                 .splineTo(new Vector2d(12,39),Math.toRadians(-60))
                 .addDisplacementMarker(20,() -> {
                     System.out.println("Fc");
@@ -147,24 +148,16 @@ public class BlueClose extends LinearOpMode {
                 })
                 .build();
 
-
-        TrajectorySequence finaltraj = null;
-
         switch (recordedPropPosition) {
             case LEFT:
-                finaltraj = trajright;
-                break;
-            case UNFOUND:
-                finaltraj = trajCenter;
+                finaltraj = trajleft;
                 break;
             case MIDDLE:
                 finaltraj = trajCenter;
                 break;
             case RIGHT:
-                finaltraj = trajleft;
-                break;
-            default:
                 finaltraj = trajright;
+                break;
         }
 
 

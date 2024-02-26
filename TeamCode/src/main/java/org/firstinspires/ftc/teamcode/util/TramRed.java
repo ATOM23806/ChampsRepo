@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.camera;
+package org.firstinspires.ftc.teamcode.util;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.function.DoubleSupplier;
 
-public class Tram implements VisionProcessor {
+public class TramRed implements VisionProcessor {
     private final DoubleSupplier minArea, left, right;
     private final Scalar upper; // lower bounds for masking
     private final Scalar lower; // upper bounds for masking
@@ -48,7 +48,7 @@ public class Tram implements VisionProcessor {
      * @param left    the dividing point for the prop to be on the left
      * @param right   the diving point for the prop to be on the right
      */
-    public Tram(@NonNull Scalar lower, @NonNull Scalar upper, DoubleSupplier minArea, DoubleSupplier left, DoubleSupplier right) {
+    public TramRed(@NonNull Scalar lower, @NonNull Scalar upper, DoubleSupplier minArea, DoubleSupplier left, DoubleSupplier right) {
         this.contours = new ArrayList<>();
         this.lower = lower;
         this.upper = upper;

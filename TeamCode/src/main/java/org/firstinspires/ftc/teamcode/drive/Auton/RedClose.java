@@ -1,11 +1,8 @@
-package org.firstinspires.ftc.teamcode.drive.compOpModes;
+package org.firstinspires.ftc.teamcode.drive.Auton;
 
-
-import androidx.annotation.NonNull;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -14,21 +11,20 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.drive.camera.Tram;
+import org.firstinspires.ftc.teamcode.util.TramRed;
 import org.firstinspires.ftc.teamcode.drive.mechanisms.Slides;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.opencv.core.Scalar;
 
-@Autonomous
-public class TestAutoNumeroUno extends LinearOpMode {
+@Autonomous (group = "Red Autos", name = "Red Side Close")
+public class RedClose extends LinearOpMode {
 
     private Servo rights, lefts;
     private CRServo intake;
 
     private VisionPortal visionPortal;
-    private Tram redTram;
+    private TramRed redTram;
     private RevColorSensorV3 colorSensorV3;
     private Servo release;
     Slides slides;
@@ -48,7 +44,7 @@ public class TestAutoNumeroUno extends LinearOpMode {
 
         double minArea = 100;
 
-        redTram = new Tram(
+        redTram = new TramRed(
                 lower,
                 upper,
                 () -> minArea,
@@ -83,10 +79,10 @@ public class TestAutoNumeroUno extends LinearOpMode {
             visionPortal.stopStreaming();
         }
 
-        Tram.PropPositions recordedPropPosition = redTram.getRecordedPropPosition();
+        TramRed.PropPositions recordedPropPosition = redTram.getRecordedPropPosition();
 
-        if (recordedPropPosition == Tram.PropPositions.UNFOUND) {
-            recordedPropPosition = Tram.PropPositions.MIDDLE;
+        if (recordedPropPosition == TramRed.PropPositions.UNFOUND) {
+            recordedPropPosition = TramRed.PropPositions.MIDDLE;
         }
 
 

@@ -1,11 +1,8 @@
-package org.firstinspires.ftc.teamcode.drive.compOpModes;
+package org.firstinspires.ftc.teamcode.drive.Auton;
 
-
-import androidx.annotation.NonNull;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -14,92 +11,90 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.drive.camera.Tram;
+import org.firstinspires.ftc.teamcode.util.TramBlue;
 import org.firstinspires.ftc.teamcode.drive.mechanisms.Slides;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.opencv.core.Scalar;
 
-@Autonomous
-public class RedFarSide extends LinearOpMode {
+@Autonomous (group = "Blue Autos", name = "Blue Side Close")
+public class BlueClose extends LinearOpMode {
 
     private Servo rights, lefts;
     private CRServo intake;
-
-    private VisionPortal visionPortal;
-    private Tram redTram;
-    private RevColorSensorV3 colorSensorV3;
     private Servo release;
+    private VisionPortal visionPortal;
+    private TramBlue blueTram;
+    private RevColorSensorV3 colorSensorV3;
     Slides slides;
     @Override
     public void runOpMode() throws InterruptedException {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        drive.setPoseEstimate(new Pose2d(-37, -59.54, Math.toRadians(450.00)));
+        drive.setPoseEstimate(new Pose2d(11.3, 59.7, Math.toRadians(-90)));
         rights = hardwareMap.get(Servo.class, "rA");
         lefts = hardwareMap.get(Servo.class, "lA");
         intake = hardwareMap.get(CRServo.class, "in");
         release = hardwareMap.get(Servo.class, "release");
         slides = new Slides(hardwareMap);
         slides.resetEnc();
+        release.setPosition(0);
+        rights.setPosition(0.20);
+        lefts.setPosition(0.20);
 
-        Scalar lower = new Scalar(150, 100, 100);
-        Scalar upper = new Scalar(180, 255, 255);
+
+
+        Scalar lower = new Scalar(92, 174, 60);
+        Scalar upper = new Scalar(178, 255, 251);
 
         double minArea = 100;
 
-        redTram = new Tram(
+        blueTram = new TramBlue(
                 lower,
                 upper,
                 () -> minArea,
-                () -> 410,
-                () -> 426
+                () -> 250,
+                () -> 260
         );
         visionPortal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
-                .addProcessor(redTram)
+                .addProcessor(blueTram)
                 .build();
 
-
-
-        release.setPosition(0);
-        rights.setPosition(0.05);
-        lefts.setPosition(0.05);
-
         while(!isStarted()) {
-            telemetry.addData("Currently Recorded Position", redTram.getRecordedPropPosition());
+            telemetry.addData("Currently Recorded Position", blueTram.getRecordedPropPosition());
             telemetry.addData("Camera State", visionPortal.getCameraState());
-            telemetry.addData("Currently Detected Mass Center", "x: " + redTram.getLargestContourX() + ", y: " + redTram.getLargestContourY());
-            telemetry.addData("Currently Detected Mass Area", redTram.getLargestContourArea());
-            telemetry.addData("Fuck", redTram.getHeight());
+            telemetry.addData("Currently Detected Mass Center", "x: " + blueTram.getLargestContourX() + ", y: " + blueTram.getLargestContourY());
+            telemetry.addData("Currently Detected Mass Area", blueTram.getLargestContourArea());
+            telemetry.addData("Fuck", blueTram.getHeight());
             telemetry.update();
         }
+
+
         waitForStart();
         if (isStopRequested()) return;
-
 
         if (visionPortal.getCameraState() == VisionPortal.CameraState.STREAMING) {
             visionPortal.stopLiveView();
             visionPortal.stopStreaming();
         }
 
-        Tram.PropPositions recordedPropPosition = redTram.getRecordedPropPosition();
+        TramBlue.PropPositions recordedPropPosition = blueTram.getRecordedPropPosition();
 
-        if (recordedPropPosition == Tram.PropPositions.UNFOUND) {
-            recordedPropPosition = Tram.PropPositions.MIDDLE;
+        if (recordedPropPosition == TramBlue.PropPositions.UNFOUND) {
+            recordedPropPosition = TramBlue.PropPositions.MIDDLE;
         }
 
 
 
-        TrajectorySequence trajleft = drive.trajectorySequenceBuilder(new  Pose2d(11.3, -59.7, Math.toRadians(90)))
-                .splineTo(new Vector2d(5.2,-36.6),Math.toRadians(130))
+        TrajectorySequence trajleft = drive.trajectorySequenceBuilder(new  Pose2d(11.9, 59.7, Math.toRadians(-90)))
+                .splineTo(new Vector2d(1,36.6),Math.toRadians(-130))
                 .addDisplacementMarker(20,() -> {
                     System.out.println("Fc");
                     intake.setPower(-1);
                 })
-                .lineToSplineHeading(new Pose2d(46.2,-28))
+                .lineToSplineHeading(new Pose2d(46.2,28))
                 .turn(Math.toRadians(180))
-                .lineToConstantHeading(new Vector2d(54.2,-28))
+                .lineToConstantHeading(new Vector2d(55.5,28))
                 .addDisplacementMarker(50, () -> {
                     System.out.println("F");
                     rights.setPosition(0.47);
@@ -109,75 +104,68 @@ public class RedFarSide extends LinearOpMode {
 
 
 
-
-        TrajectorySequence trajCenter = drive.trajectorySequenceBuilder(new Pose2d(-37, -59.54, Math.toRadians(450.00)))
-                .strafeLeft(4)
-
-                .lineToSplineHeading(new Pose2d(-43.09, -13.68, Math.toRadians(270.00)))
-
-
-                .strafeLeft(3)
+        TrajectorySequence trajCenter = drive.trajectorySequenceBuilder(new  Pose2d(11.3, 59.7, Math.toRadians(-90)))
+                .splineToSplineHeading(new Pose2d(31.99, 20.2, Math.toRadians(180.00)), Math.toRadians(-88.09))
                 .addDisplacementMarker(() -> {
                     System.out.println("Hello, World!");
                     intake.setPower(-1);
                 })
-                .back(6)
-                .lineTo(new Vector2d(-35.14, -8.62))
-                .lineTo(new Vector2d(-17.95, -8.67))
-                .addDisplacementMarker(() -> {
-                    intake.setPower(0);
-                })
-                .lineTo(new Vector2d(10.60, -8.21))
+                .forward(15)
                 .addDisplacementMarker(() -> {
                     System.out.println("Stopping Intake!");
                     rights.setPosition(0.47);
                     lefts.setPosition(0.47);
                 })
-                .waitSeconds(5)
-                .lineTo(new Vector2d(37.93, -10.60))
-                .lineToSplineHeading(new Pose2d(41.69, -17.73, Math.toRadians(180.00)))
-                .splineToSplineHeading(new Pose2d(49.82, -28.0, Math.toRadians(180.00)), Math.toRadians(18.44))
-                .back(8)
+                .lineToConstantHeading(new Vector2d(55,36.3))
+                .addDisplacementMarker(() -> {
+                    intake.setPower(0);
+                })
+                .addDisplacementMarker(() ->{
+
+                })
                 .build();
 
 
 
-        TrajectorySequence trajright = drive.trajectorySequenceBuilder(new  Pose2d(11.3, -59.7, Math.toRadians(90)))
-                .splineTo(new Vector2d(16.7,-37.6),Math.toRadians(60))
+        TrajectorySequence trajright = drive.trajectorySequenceBuilder(new  Pose2d(11.3, 59.7, Math.toRadians(-90)))
+                .splineTo(new Vector2d(12,39),Math.toRadians(-60))
                 .addDisplacementMarker(20,() -> {
-                    intake.setPower(-1);
                     System.out.println("Fc");
+                    intake.setPower(-1);
                 })
-                .back(5)
-                .turn(Math.toRadians(-60))
-                .strafeRight(5)
-                .splineToConstantHeading(new Vector2d(46.7,-40),Math.toRadians(0))
+                .back(6)
+                .turn(Math.toRadians(60))
+                .strafeLeft(6)
+                .splineToConstantHeading(new Vector2d(46.7,40),Math.toRadians(0))
                 .turn(Math.toRadians(180))
-                .lineToConstantHeading(new Vector2d(54.2,-40))
+                .lineToConstantHeading(new Vector2d(54.2,40))
                 .addDisplacementMarker(50, () -> {
-                    intake.setPower(0);
+                    System.out.println("Stopping Intake!");
                     rights.setPosition(0.47);
                     lefts.setPosition(0.47);
-                    System.out.println("F");
+                    intake.setPower(0);
                 })
                 .build();
+
 
         TrajectorySequence finaltraj = null;
 
         switch (recordedPropPosition) {
             case LEFT:
-                finaltraj = trajleft;
+                finaltraj = trajright;
                 break;
             case UNFOUND:
-                finaltraj = trajleft;
+                finaltraj = trajCenter;
                 break;
             case MIDDLE:
                 finaltraj = trajCenter;
                 break;
             case RIGHT:
+                finaltraj = trajleft;
+                break;
+            default:
                 finaltraj = trajright;
         }
-
 
 
 
@@ -197,13 +185,19 @@ public class RedFarSide extends LinearOpMode {
         rights.setPosition(0.0);
         lefts.setPosition(0.0);
 
+
         TrajectorySequence fin = drive.trajectorySequenceBuilder(finaltraj.end())
-                .lineToConstantHeading(new Vector2d( 39,-36))
-                .lineToConstantHeading(new Vector2d(39,-55))
-                .lineToConstantHeading(new Vector2d(60, -55))
+                .forward(10)
+                .lineToConstantHeading(new Vector2d( 39.2,60))
+                .lineToConstantHeading(new Vector2d(60,60))
+                .addDisplacementMarker(70, () -> {
+                    release.setPosition(0);
+                })
                 .build();
 
         drive.followTrajectorySequence(fin);
+
+
 
 
         while(!isStopRequested()) {

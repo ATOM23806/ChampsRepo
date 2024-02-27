@@ -120,11 +120,12 @@ public class BlueSideFar extends LinearOpMode {
 
 
         TrajectorySequence trajright = drive.trajectorySequenceBuilder(new  Pose2d(-36.98, 61.77, Math.toRadians(-90)))
-                .splineToSplineHeading(new Pose2d(-47.23, 16.26, Math.toRadians(90.00)), Math.toRadians(-75.71))
+                .splineToSplineHeading(new Pose2d(-49.63, 16.26, Math.toRadians(90.00)), Math.toRadians(-75.71))
                 .addDisplacementMarker(() -> {
-                    intake.setPower(-1);
+                    intake.setPower(-0.5);
                 })
                 .forward(5)
+                .waitSeconds(2)
                 .splineToSplineHeading(new Pose2d(-30.09, 12.2, Math.toRadians(180.00)), Math.toRadians(-12.20))
                 .addDisplacementMarker(() -> {
                     intake.setPower(0);

@@ -125,7 +125,7 @@ public class BlueSideFar extends LinearOpMode {
                     intake.setPower(-0.5);
                 })
                 .forward(5)
-                .waitSeconds(2)
+                .back(5)
                 .splineToSplineHeading(new Pose2d(-30.09, 12.2, Math.toRadians(180.00)), Math.toRadians(-12.20))
                 .addDisplacementMarker(() -> {
                     intake.setPower(0);

@@ -14,26 +14,27 @@ public class MeepMeepTesting {
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(-37, -59.54, Math.toRadians(450.00)))
+                        drive.trajectorySequenceBuilder(new  Pose2d(-36.98, -61.77, Math.toRadians(90)))
                                 .strafeLeft(4)
 
                                 .lineToSplineHeading(new Pose2d(-43.09, -13.68, Math.toRadians(270.00)))
 
+
                                 .strafeLeft(3)
-                                .back(4)
+
+                                .back(6)
                                 .lineTo(new Vector2d(-35.14, -8.62))
-                                .lineTo(new Vector2d(-17.95, -9.67))
+                                .lineTo(new Vector2d(-17.95, -8.67))
 
-                                .lineTo(new Vector2d(10.60, -9.21))
+                                .lineTo(new Vector2d(10.60, -8.21))
 
-
+                                .waitSeconds(5)
                                 .lineTo(new Vector2d(37.93, -10.60))
                                 .lineToSplineHeading(new Pose2d(41.69, -17.73, Math.toRadians(180.00)))
-                                .splineToSplineHeading(new Pose2d(49.82, -36.15, Math.toRadians(180.00)), Math.toRadians(18.44))
-                                .back(6.5)
-                                .lineToConstantHeading(new Vector2d( 39,-36))
-                                .lineToConstantHeading(new Vector2d(39,-60))
-                                .lineToConstantHeading(new Vector2d(60, -60))
+                                .splineToSplineHeading(new Pose2d(49.82, -28.0, Math.toRadians(180.00)), Math.toRadians(18.44))
+                                .back(8)
+                                .forward(10)
+                                .splineToConstantHeading(new Vector2d(61.46, -11.14), Math.toRadians(-1.36))
                                 .build()
                 );
 

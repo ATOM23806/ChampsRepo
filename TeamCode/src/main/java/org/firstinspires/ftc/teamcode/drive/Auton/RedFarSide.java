@@ -139,23 +139,15 @@ public class RedFarSide extends LinearOpMode {
 
 
         TrajectorySequence trajright = drive.trajectorySequenceBuilder(new  Pose2d(11.3, -59.7, Math.toRadians(90)))
-                .splineTo(new Vector2d(16.7,-37.6),Math.toRadians(60))
-                .addDisplacementMarker(20,() -> {
-                    intake.setPower(-1);
-                    System.out.println("Fc");
+                .splineToSplineHeading(new Pose2d(-47.23, -16.26, Math.toRadians(-90.00)), Math.toRadians(-75.71))
+                .forward(5)
+                .splineToSplineHeading(new Pose2d(-30.09, -12.2, Math.toRadians(180.00)), Math.toRadians(-12.20))
+                .lineToConstantHeading(new Vector2d(38.02, -10.77))
+                .addDisplacementMarker(130, () -> {
+                    System.out.println("init");
                 })
-                .back(5)
-                .turn(Math.toRadians(-60))
-                .strafeRight(5)
-                .splineToConstantHeading(new Vector2d(46.7,-40),Math.toRadians(0))
-                .turn(Math.toRadians(180))
-                .lineToConstantHeading(new Vector2d(54.2,-40))
-                .addDisplacementMarker(50, () -> {
-                    intake.setPower(0);
-                    rights.setPosition(0.47);
-                    lefts.setPosition(0.47);
-                    System.out.println("F");
-                })
+                .splineToConstantHeading(new Vector2d(50.52, -45.75), Math.toRadians(46.47))
+                .back(4)
                 .build();
 
         TrajectorySequence finaltraj = null;
@@ -194,9 +186,8 @@ public class RedFarSide extends LinearOpMode {
         lefts.setPosition(0.0);
 
         TrajectorySequence fin = drive.trajectorySequenceBuilder(finaltraj.end())
-                .lineToConstantHeading(new Vector2d( 39,-36))
-                .lineToConstantHeading(new Vector2d(39,-55))
-                .lineToConstantHeading(new Vector2d(60, -55))
+                .forward(10)
+                .splineToConstantHeading(new Vector2d(61.46, -11.14), Math.toRadians(-1.36))
                 .addDisplacementMarker(() -> {
                     release.setPosition(0);
                 })

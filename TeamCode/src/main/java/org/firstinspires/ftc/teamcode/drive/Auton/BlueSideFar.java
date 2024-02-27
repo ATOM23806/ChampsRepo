@@ -104,7 +104,6 @@ public class BlueSideFar extends LinearOpMode {
                 })
                 .lineTo(new Vector2d(10.60, 9.21))
                 .addDisplacementMarker(() -> {
-                    System.out.println("Stopping Intake!");
                     rights.setPosition(0.47);
                     lefts.setPosition(0.47);
                 })
@@ -121,7 +120,22 @@ public class BlueSideFar extends LinearOpMode {
 
 
         TrajectorySequence trajright = drive.trajectorySequenceBuilder(new  Pose2d(-36.98, 61.77, Math.toRadians(-90)))
-                .splineToSplineHeading(new Pose2d(-47.49, 9.84, Math.toRadians(89.18)), Math.toRadians(269.01))
+                .splineToSplineHeading(new Pose2d(-47.23, 16.26, Math.toRadians(90.00)), Math.toRadians(-75.71))
+                .addDisplacementMarker(() -> {
+                    intake.setPower(-1);
+                })
+                .forward(5)
+                .splineToSplineHeading(new Pose2d(-30.09, 12.2, Math.toRadians(180.00)), Math.toRadians(-12.20))
+                .addDisplacementMarker(() -> {
+                    intake.setPower(0);
+                })
+                .lineToConstantHeading(new Vector2d(38.02, 10.77))
+                .addDisplacementMarker(130, () -> {
+                    rights.setPosition(0.47);
+                    lefts.setPosition(0.47);
+                })
+                .splineToConstantHeading(new Vector2d(50.52, 45.75), Math.toRadians(46.47))
+                .back(4)
                 .build();
         
 
@@ -158,8 +172,7 @@ public class BlueSideFar extends LinearOpMode {
 
         TrajectorySequence fin = drive.trajectorySequenceBuilder(finaltraj.end())
                 .forward(10)
-                .lineToConstantHeading(new Vector2d( 52.2,4.5))
-                .lineToConstantHeading(new Vector2d(65,4.5))
+                .splineToConstantHeading(new Vector2d(61.46, 11.14), Math.toRadians(-1.36))
                 .addDisplacementMarker(70, () -> {
                     release.setPosition(0);
                 })

@@ -91,19 +91,25 @@ public class RedFarSide extends LinearOpMode {
 
 
         TrajectorySequence trajleft = drive.trajectorySequenceBuilder(startingPose)
-                .splineTo(new Vector2d(5.2,-36.6),Math.toRadians(130))
-                .addDisplacementMarker(20,() -> {
-                    System.out.println("Fc");
-                    intake.setPower(-1);
+                .lineTo(new Vector2d(-40.34, -45.76))
+                .splineToSplineHeading(new Pose2d(-47.28, -17.98, Math.toRadians(270.00)), Math.toRadians(107.10))
+                .addDisplacementMarker(() -> {
+                    intake.setPower(-0.5);
                 })
-                .lineToSplineHeading(new Pose2d(46.2,-28))
-                .turn(Math.toRadians(180))
-                .lineToConstantHeading(new Vector2d(54.2,-28))
-                .addDisplacementMarker(50, () -> {
-                    System.out.println("F");
+                .forward(3.5)
+                .back(3.5)
+                .splineToSplineHeading(new Pose2d(-33.81, -11.59, Math.toRadians(180.00)), Math.toRadians(0.00))
+                .addDisplacementMarker(() -> {
+                    intake.setPower(0);
+                })
+                .lineToConstantHeading(new Vector2d(40.89, -10.48))
+                .addDisplacementMarker(120, () -> {
+                    System.out.println("Stopping Intake!");
                     rights.setPosition(0.47);
                     lefts.setPosition(0.47);
                 })
+                .splineToConstantHeading(new Vector2d(49.64, -29.92), Math.toRadians(-23.20))
+                .back(4)
                 .build();
 
 
@@ -112,31 +118,31 @@ public class RedFarSide extends LinearOpMode {
         TrajectorySequence trajCenter = drive.trajectorySequenceBuilder(startingPose)
                 .strafeLeft(4)
 
-                .lineToSplineHeading(new Pose2d(-43.09, -13.68, Math.toRadians(270.00)))
-
-
-                .strafeLeft(3)
+                .lineToSplineHeading(new Pose2d(-37.09, -13.68, Math.toRadians(270.00)))
                 .addDisplacementMarker(() -> {
-                    System.out.println("Hello, World!");
-                    intake.setPower(-1);
+                    intake.setPower(-0.5);
                 })
+
                 .back(6)
                 .lineTo(new Vector2d(-35.14, -8.62))
                 .lineTo(new Vector2d(-17.95, -8.67))
                 .addDisplacementMarker(() -> {
                     intake.setPower(0);
                 })
+
                 .lineTo(new Vector2d(10.60, -8.21))
-                .addDisplacementMarker(() -> {
+                .addDisplacementMarker(120, () -> {
                     System.out.println("Stopping Intake!");
                     rights.setPosition(0.47);
                     lefts.setPosition(0.47);
                 })
+
                 .waitSeconds(5)
                 .lineTo(new Vector2d(37.93, -10.60))
                 .lineToSplineHeading(new Pose2d(41.69, -17.73, Math.toRadians(180.00)))
                 .splineToSplineHeading(new Pose2d(49.82, -28.0, Math.toRadians(180.00)), Math.toRadians(18.44))
-                .back(8)
+                .back(5)
+
                 .build();
 
 

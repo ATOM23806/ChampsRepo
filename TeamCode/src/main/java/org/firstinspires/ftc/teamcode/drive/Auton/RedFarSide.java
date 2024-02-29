@@ -114,7 +114,7 @@ public class RedFarSide extends LinearOpMode {
 
 
 
-
+        //TODO: Verify middle
         TrajectorySequence trajCenter = drive.trajectorySequenceBuilder(startingPose)
                 .strafeLeft(4)
 

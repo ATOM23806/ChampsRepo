@@ -85,11 +85,28 @@ public class BlueSideFar extends LinearOpMode {
         }
 
         TrajectorySequence trajleft = drive.trajectorySequenceBuilder(new  Pose2d(-36.98, 61.77, Math.toRadians(-90)))
-                .splineToSplineHeading(new Pose2d(-47.49, 9.84, Math.toRadians(89.18)), Math.toRadians(269.01))
+                .splineToSplineHeading(new Pose2d(-35.20, 31.17, Math.toRadians(0.00)), Math.toRadians(-9.16))
+                .addDisplacementMarker(() -> {
+                    intake.setPower(-0.5);
+                })
+                .forward(3.5)
+                .back(3.5)
+                .lineToSplineHeading(new Pose2d(-42.28, 23.26, Math.toRadians(180.00)))
+                .addDisplacementMarker(() -> {
+                    intake.setPower(0);
+                })
+                .splineToConstantHeading(new Vector2d(-37.84, 11.18), Math.toRadians(45.00))
+                .lineToConstantHeading(new Vector2d(43.39, 11.18))
+                .addDisplacementMarker(125, () -> {
+                    rights.setPosition(0.47);
+                    lefts.setPosition(0.47);
+                })
+                .splineToConstantHeading(new Vector2d(49.37, 40.48), Math.toRadians(82.23))
+                .back(4)
                 .build();
 
 
-
+        //TODO: Verify middle
         TrajectorySequence trajCenter = drive.trajectorySequenceBuilder(new  Pose2d(-36.98, 61.77, Math.toRadians(-90)))
                 .lineToSplineHeading(new Pose2d(-37.09, 13.68, Math.toRadians(90.00)))
                 .addDisplacementMarker(() -> {

@@ -120,23 +120,27 @@ public class BlueSideFar extends LinearOpMode {
 
 
         TrajectorySequence trajright = drive.trajectorySequenceBuilder(new  Pose2d(-36.98, 61.77, Math.toRadians(-90)))
-                .splineToSplineHeading(new Pose2d(-49.63, 16.26, Math.toRadians(90.00)), Math.toRadians(-75.71))
+                .splineToSplineHeading(new Pose2d(-50.63, 16.26, Math.toRadians(90.00)), Math.toRadians(-75.71))
                 .addDisplacementMarker(() -> {
                     intake.setPower(-0.5);
                 })
                 .forward(5)
                 .back(5)
-                .splineToSplineHeading(new Pose2d(-30.09, 12.2, Math.toRadians(180.00)), Math.toRadians(-12.20))
+
+                .splineToSplineHeading(new Pose2d(-36.14, 9.85, Math.toRadians(180.00)), Math.toRadians(-21.85))
                 .addDisplacementMarker(() -> {
                     intake.setPower(0);
                 })
-                .lineToConstantHeading(new Vector2d(38.02, 10.77))
-                .addDisplacementMarker(130, () -> {
+                .lineToConstantHeading(new Vector2d(35.01, 9.36))
+
+                .addDisplacementMarker(() -> {
                     rights.setPosition(0.47);
                     lefts.setPosition(0.47);
                 })
-                .splineToConstantHeading(new Vector2d(50.52, 45.75), Math.toRadians(46.47))
-                .back(4)
+                .waitSeconds(2)
+                .splineToConstantHeading(new Vector2d(46.86, 20.4), Math.toRadians(41.76))
+
+                .back(6.5)
                 .build();
         
 
@@ -172,8 +176,9 @@ public class BlueSideFar extends LinearOpMode {
 
 
         TrajectorySequence fin = drive.trajectorySequenceBuilder(finaltraj.end())
-                .forward(10)
-                .splineToConstantHeading(new Vector2d(61.46, 11.14), Math.toRadians(-1.36))
+                .forward(16)
+                .strafeLeft(5)
+                .splineToConstantHeading(new Vector2d(55.68, 5), Math.toRadians(63.43))
                 .addDisplacementMarker(70, () -> {
                     release.setPosition(0);
                 })

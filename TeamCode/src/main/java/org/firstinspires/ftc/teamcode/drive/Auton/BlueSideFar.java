@@ -108,29 +108,23 @@ public class BlueSideFar extends LinearOpMode {
 
         //TODO: Verify middle
         TrajectorySequence trajCenter = drive.trajectorySequenceBuilder(new  Pose2d(-36.98, 61.77, Math.toRadians(-90)))
-                .lineToSplineHeading(new Pose2d(-37.09, 13.68, Math.toRadians(90.00)))
+                .lineTo(new Vector2d(-38.60, 22.18))
+                .lineToSplineHeading(new Pose2d(-38.60, 13.31, Math.toRadians(90.00)))
                 .addDisplacementMarker(() -> {
-                    System.out.println("Hello, World!");
-                    intake.setPower(-1);
+                    intake.setPower(-0.3);
                 })
-                .back(4)
-                .lineTo(new Vector2d(-37.14, 8.62))
-                .lineTo(new Vector2d(-17.95, 9.67))
+                .forward(3)
+                .lineToSplineHeading(new Pose2d(-32.18, 11.61, Math.toRadians(180.00)))
                 .addDisplacementMarker(() -> {
                     intake.setPower(0);
                 })
-                .lineTo(new Vector2d(10.60, 9.21))
-                .addDisplacementMarker(() -> {
+                .lineToConstantHeading(new Vector2d(38.41, 11.80))
+                .addDisplacementMarker(125, () -> {
                     rights.setPosition(0.47);
                     lefts.setPosition(0.47);
                 })
-                .waitSeconds(5)
-                .lineTo(new Vector2d(37.93, 9.60))
-
-                .lineToSplineHeading(new Pose2d(40.20, 15.11, Math.toRadians(180.00)))
-
-                .splineToSplineHeading(new Pose2d(49.25, 26.01, Math.toRadians(180.00)), Math.toRadians(0.00))
-                .back(6.5)
+                .lineToSplineHeading(new Pose2d(49.35, 34.44, Math.toRadians(180.00)))
+                .back(5.5)
                 .build();
 
 
@@ -157,7 +151,7 @@ public class BlueSideFar extends LinearOpMode {
                 .waitSeconds(2)
                 .splineToConstantHeading(new Vector2d(46.86, 20.4), Math.toRadians(41.76))
 
-                .back(6.5)
+                .back(5)
                 .build();
         
 
@@ -193,9 +187,9 @@ public class BlueSideFar extends LinearOpMode {
 
 
         TrajectorySequence fin = drive.trajectorySequenceBuilder(finaltraj.end())
-                .forward(16)
-                .strafeLeft(5)
-                .splineToConstantHeading(new Vector2d(55.68, 5), Math.toRadians(63.43))
+                .forward(18)
+                .strafeLeft(7)
+                .splineToConstantHeading(new Vector2d(55.68, 11), Math.toRadians(43.43))
                 .addDisplacementMarker(70, () -> {
                     release.setPosition(0);
                 })

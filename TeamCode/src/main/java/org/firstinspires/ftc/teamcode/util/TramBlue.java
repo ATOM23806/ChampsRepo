@@ -160,7 +160,7 @@ public class TramBlue implements VisionProcessor {
             propPosition = PropPositions.RIGHT;
         } else if (largestContourX < left.getAsDouble()) {
             propPosition = PropPositions.LEFT;
-        } else if (largestContourX > right.getAsDouble() && getHeight() > 80) {
+        } else if (largestContourX > right.getAsDouble() && getHeight() > 40) {
             propPosition = PropPositions.MIDDLE;
         } else {
             propPosition = PropPositions.RIGHT;

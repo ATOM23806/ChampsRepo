@@ -16,33 +16,33 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.opencv.core.Scalar;
 
-@Autonomous (group = "Blue Autos", name = "Blue Side Far")
-public class BlueSideFar extends LinearOpMode {
+@Autonomous (group = "Blue Autos", name = "Blue Side Far +2")
+public class BlueSideFarStack extends LinearOpMode {
 
     private Servo rights, lefts;
     private CRServo intake;
-    private Servo release;
+    private Servo release, flick;
     private VisionPortal visionPortal;
     private TramBlue blueTram;
     private RevColorSensorV3 colorSensorV3;
-    private TrajectorySequence finaltraj;
-    private Pose2d startingPose;
+    private TrajectorySequence finaltraj, stacktraj, scoretraj;
     Slides slides;
 
     @Override
     public void runOpMode() throws InterruptedException {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        startingPose = new  Pose2d(-36.98, 61.77, Math.toRadians(-90));
-        drive.setPoseEstimate(startingPose);
+        drive.setPoseEstimate(new  Pose2d(-36.98, 61.77, Math.toRadians(-90)));
         rights = hardwareMap.get(Servo.class, "rA");
         lefts = hardwareMap.get(Servo.class, "lA");
         intake = hardwareMap.get(CRServo.class, "in");
         release = hardwareMap.get(Servo.class, "release");
+        flick = hardwareMap.get(Servo.class, "flick");
         slides = new Slides(hardwareMap);
         slides.resetEnc();
         release.setPosition(0);
         rights.setPosition(0.20);
         lefts.setPosition(0.20);
+        flick.setPosition(0.77);
 
 
         Scalar lower = new Scalar(92, 174, 60);
@@ -86,7 +86,7 @@ public class BlueSideFar extends LinearOpMode {
             recordedPropPosition = TramBlue.PropPositions.MIDDLE;
         }
 
-        TrajectorySequence trajleft = drive.trajectorySequenceBuilder(startingPose)
+        TrajectorySequence trajleft = drive.trajectorySequenceBuilder(new  Pose2d(-36.98, 61.77, Math.toRadians(-90)))
                 .splineToSplineHeading(new Pose2d(-35.20, 31.17, Math.toRadians(0.00)), Math.toRadians(-9.16))
                 .addDisplacementMarker(() -> {
                     intake.setPower(-0.5);
@@ -109,7 +109,7 @@ public class BlueSideFar extends LinearOpMode {
 
 
         //TODO: Verify middle
-        TrajectorySequence trajCenter = drive.trajectorySequenceBuilder(startingPose)
+        TrajectorySequence trajCenter = drive.trajectorySequenceBuilder(new  Pose2d(-36.98, 61.77, Math.toRadians(-90)))
                 .lineTo(new Vector2d(-38.60, 22.18))
                 .lineToSplineHeading(new Pose2d(-38.60, 13.31, Math.toRadians(90.00)))
                 .addDisplacementMarker(() -> {
@@ -132,7 +132,7 @@ public class BlueSideFar extends LinearOpMode {
 
 
 
-        TrajectorySequence trajright = drive.trajectorySequenceBuilder(startingPose)
+        TrajectorySequence trajright = drive.trajectorySequenceBuilder(new  Pose2d(-36.98, 61.77, Math.toRadians(-90)))
                 .splineToSplineHeading(new Pose2d(-50.63, 16.26, Math.toRadians(90.00)), Math.toRadians(-75.71))
                 .addDisplacementMarker(() -> {
                     intake.setPower(-0.5);
@@ -155,7 +155,37 @@ public class BlueSideFar extends LinearOpMode {
 
                 .back(5)
                 .build();
-        
+
+        TrajectorySequence trajRightStack = drive.trajectorySequenceBuilder(trajright.end())
+                .splineToConstantHeading(new Vector2d(29.99, 12.77), Math.toRadians(192.06))
+                .splineToConstantHeading(new Vector2d(7.47, 11.64), Math.toRadians(171.87))
+                .lineToConstantHeading(new Vector2d(-51.68, 10.84))
+                .lineToConstantHeading(new Vector2d(-58.45, 10.45))
+                .addDisplacementMarker(() -> {
+                    flick.setPosition(.712);
+                })
+                .back(4)
+                .addDisplacementMarker(() -> {
+                    flick.setPosition(.77);
+                })
+                .addDisplacementMarker(() -> {
+                    intake.setPower(1);
+                })
+                .strafeLeft(2)
+                .forward(1)
+
+                .build();
+
+        TrajectorySequence trajRightBoard = drive.trajectorySequenceBuilder(trajRightStack.end())
+                .addDisplacementMarker(() -> {
+                    intake.setPower(1);
+                })
+                .lineToConstantHeading(new Vector2d(35.36, 11.39))
+                .lineToConstantHeading(new Vector2d(46.86, 20.40))
+                .build();
+
+
+
 
         switch (recordedPropPosition) {
             case LEFT:
@@ -166,12 +196,14 @@ public class BlueSideFar extends LinearOpMode {
                 break;
             case RIGHT:
                 finaltraj = trajright;
+                stacktraj = trajRightStack;
+                scoretraj = trajRightBoard;
                 break;
         }
 
-
-
         drive.followTrajectorySequence(finaltraj);
+        drive.followTrajectorySequence(stacktraj);
+        drive.followTrajectorySequence(scoretraj);
 
         boolean slidesTop = false;
 

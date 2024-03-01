@@ -15,17 +15,16 @@ public class MeepMeepTesting {
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15.5)
                 .followTrajectorySequence(drive ->
                         drive.trajectorySequenceBuilder(new  Pose2d(-36.98, 61.77, Math.toRadians(180)))
-                                .splineToSplineHeading(new Pose2d(-35.20, 31.17, Math.toRadians(0.00)), Math.toRadians(-9.16))
+                                .lineTo(new Vector2d(-38.60, 22.18))
+                                .lineToSplineHeading(new Pose2d(-38.60, 13.31, Math.toRadians(90.00)))
 
-                                .forward(3.5)
-                                .back(3.5)
-                                .lineToSplineHeading(new Pose2d(-42.28, 23.26, Math.toRadians(180.00)))
+                                .forward(3)
+                                .lineToSplineHeading(new Pose2d(-32.18, 11.61, Math.toRadians(180.00)))
 
-                                .splineToConstantHeading(new Vector2d(-37.84, 11.18), Math.toRadians(45.00))
-                                .lineToConstantHeading(new Vector2d(43.39, 11.18))
+                                .lineToConstantHeading(new Vector2d(38.41, 11.80))
 
-                                .splineToConstantHeading(new Vector2d(49.37, 40.48), Math.toRadians(82.23))
-                                .back(4)
+                                .lineToSplineHeading(new Pose2d(49.35, 34.44, Math.toRadians(180.00)))
+                                .back(5.5)
                                 .forward(8)
 
                                 .splineToConstantHeading(new Vector2d(29.99, 12.77), Math.toRadians(192.06))
@@ -41,7 +40,7 @@ public class MeepMeepTesting {
                                 .forward(1)
 
                                 .lineToConstantHeading(new Vector2d(35.36, 11.39))
-                                .lineToConstantHeading(new Vector2d(46.86, 40.40))
+                                .lineToConstantHeading(new Vector2d(46.86, 34.44))
                                 .back(4)
 
 

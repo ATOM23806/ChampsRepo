@@ -163,6 +163,35 @@ public class BlueSideFarStack extends LinearOpMode {
                 .back(5.5)
                 .build();
 
+        TrajectorySequence trajCenterStack = drive.trajectorySequenceBuilder(trajCenter.end())
+                .splineToConstantHeading(new Vector2d(29.99, 12.77), Math.toRadians(192.06))
+                .splineToConstantHeading(new Vector2d(7.47, 11.64), Math.toRadians(171.87))
+                .lineToConstantHeading(new Vector2d(-51.68, 10.84))
+                .lineToConstantHeading(new Vector2d(-58.45, 10.45))
+                .addDisplacementMarker(() -> {
+                    flick.setPosition(.712);
+                })
+                .back(4)
+                .addDisplacementMarker(() -> {
+                    flick.setPosition(.77);
+                })
+                .addDisplacementMarker(() -> {
+                    intake.setPower(1);
+                })
+                .strafeLeft(2)
+                .forward(1)
+
+                .build();
+
+        TrajectorySequence trajCenterBoard = drive.trajectorySequenceBuilder(trajCenterStack.end())
+                .addDisplacementMarker(() -> {
+                    intake.setPower(0);
+                })
+                .lineToConstantHeading(new Vector2d(35.36, 11.39))
+                .lineToConstantHeading(new Vector2d(46.86, 34.44))
+                .back(4)
+                .build();
+
 
 
 

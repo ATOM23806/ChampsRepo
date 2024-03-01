@@ -107,6 +107,40 @@ public class BlueSideFarStack extends LinearOpMode {
                 .back(4)
                 .build();
 
+        TrajectorySequence trajLeftStack = drive.trajectorySequenceBuilder(trajleft.end())
+                .forward(8)
+
+                .splineToConstantHeading(new Vector2d(29.99, 12.77), Math.toRadians(192.06))
+                .splineToConstantHeading(new Vector2d(7.47, 11.64), Math.toRadians(171.87))
+                .lineToConstantHeading(new Vector2d(-51.68, 10.84))
+                .lineToConstantHeading(new Vector2d(-58.45, 10.45))
+                .addDisplacementMarker(() -> {
+                    flick.setPosition(.712);
+                })
+
+                .back(4)
+                .addDisplacementMarker(() -> {
+                    flick.setPosition(.77);
+                })
+                .addDisplacementMarker(() -> {
+                    intake.setPower(1);
+                })
+
+
+
+                .strafeLeft(2)
+                .forward(1)
+
+                .build();
+
+        TrajectorySequence trajLeftBoard = drive.trajectorySequenceBuilder(trajLeftStack.end())
+                .addDisplacementMarker(() -> {
+                    intake.setPower(0);
+                })
+                .lineToConstantHeading(new Vector2d(35.36, 11.39))
+                .lineToConstantHeading(new Vector2d(46.86, 40.40))
+                .build();
+
 
         //TODO: Verify middle
         TrajectorySequence trajCenter = drive.trajectorySequenceBuilder(new  Pose2d(-36.98, 61.77, Math.toRadians(-90)))
@@ -178,7 +212,7 @@ public class BlueSideFarStack extends LinearOpMode {
 
         TrajectorySequence trajRightBoard = drive.trajectorySequenceBuilder(trajRightStack.end())
                 .addDisplacementMarker(() -> {
-                    intake.setPower(1);
+                    intake.setPower(0);
                 })
                 .lineToConstantHeading(new Vector2d(35.36, 11.39))
                 .lineToConstantHeading(new Vector2d(46.86, 20.40))
@@ -190,6 +224,8 @@ public class BlueSideFarStack extends LinearOpMode {
         switch (recordedPropPosition) {
             case LEFT:
                 finaltraj = trajleft;
+                stacktraj = trajLeftStack;
+                scoretraj = trajLeftBoard;
                 break;
             case MIDDLE:
                 finaltraj = trajCenter;

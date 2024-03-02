@@ -196,55 +196,91 @@ public class BlueSideFarStack extends LinearOpMode {
 
 
         TrajectorySequence trajright = drive.trajectorySequenceBuilder(new  Pose2d(-36.98, 61.77, Math.toRadians(-90)))
-                .splineToSplineHeading(new Pose2d(-50.63, 16.26, Math.toRadians(90.00)), Math.toRadians(-75.71))
+                .splineToSplineHeading(new Pose2d(-51.63, 16.26, Math.toRadians(90.00)), Math.toRadians(-75.71))
                 .addDisplacementMarker(() -> {
                     intake.setPower(-0.5);
                 })
                 .forward(5)
                 .back(5)
 
-                .splineToSplineHeading(new Pose2d(-36.14, 9.85, Math.toRadians(180.00)), Math.toRadians(-21.85))
+                .splineToSplineHeading(new Pose2d(-36.14, 9.7, Math.toRadians(180.00)), Math.toRadians(-21.85))
                 .addDisplacementMarker(() -> {
                     intake.setPower(0);
                 })
-                .lineToConstantHeading(new Vector2d(35.01, 9.36))
+                .lineToConstantHeading(new Vector2d(25.01, 8.8))
 
                 .addDisplacementMarker(() -> {
                     rights.setPosition(0.47);
                     lefts.setPosition(0.47);
                 })
-                .waitSeconds(2)
-                .splineToConstantHeading(new Vector2d(46.86, 20.4), Math.toRadians(41.76))
+
+                .splineToConstantHeading(new Vector2d(46.86, 23.4), Math.toRadians(41.76))
 
                 .back(5)
                 .build();
 
         TrajectorySequence trajRightStack = drive.trajectorySequenceBuilder(trajright.end())
                 .splineToConstantHeading(new Vector2d(29.99, 12.77), Math.toRadians(192.06))
-                .splineToConstantHeading(new Vector2d(7.47, 11.64), Math.toRadians(171.87))
-                .lineToConstantHeading(new Vector2d(-51.68, 10.84))
-                .lineToConstantHeading(new Vector2d(-58.45, 10.45))
                 .addDisplacementMarker(() -> {
-                    flick.setPosition(.712);
+                    release.setPosition(0);
                 })
-                .back(4)
+                .splineToConstantHeading(new Vector2d(7.47, 9.64), Math.toRadians(171.87),
+                        SampleMecanumDrive.getVelocityConstraint(50, 50, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(60))
+
+
+
+                .lineToConstantHeading(new Vector2d(-51.68, 12),  SampleMecanumDrive.getVelocityConstraint(42, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(50))
+
+
+                .lineToConstantHeading(new Vector2d(-64.7, 21),
+                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
+
+                .addDisplacementMarker(() -> {
+                    flick.setPosition(.709);
+                })
+
+                .back(.01)
+                .waitSeconds(.1)
+
+                .strafeRight(9)
                 .addDisplacementMarker(() -> {
                     flick.setPosition(.77);
+
                 })
                 .addDisplacementMarker(() -> {
                     intake.setPower(1);
                 })
-                .strafeLeft(2)
-                .forward(1)
+                .strafeLeft(10)
+                .forward(3)
+                .back(2)
+                .forward(2)
+
+
+
 
                 .build();
 
         TrajectorySequence trajRightBoard = drive.trajectorySequenceBuilder(trajRightStack.end())
+
+                .lineToConstantHeading(new Vector2d(-28.97, 8.3))
                 .addDisplacementMarker(() -> {
+                    intake.setPower(-1);
+                })
+                .lineToConstantHeading(new Vector2d(34.88, 8.3))
+                .addDisplacementMarker(61,() -> {
                     intake.setPower(0);
                 })
-                .lineToConstantHeading(new Vector2d(35.36, 11.39))
-                .lineToConstantHeading(new Vector2d(46.86, 20.40))
+                .addDisplacementMarker(65,() -> {
+                    rights.setPosition(0.47);
+                    lefts.setPosition(0.47);
+                })
+                .splineToConstantHeading(new Vector2d(46.00, 29.00), Math.toRadians(-7.24))
+
+                .back(4.5)
+
                 .build();
 
 
@@ -267,14 +303,6 @@ public class BlueSideFarStack extends LinearOpMode {
         }
 
         drive.followTrajectorySequence(finaltraj);
-        drive.followTrajectorySequence(stacktraj);
-        drive.followTrajectorySequence(scoretraj);
-
-        boolean slidesTop = false;
-
-
-
-        intake.setPower(0);
         release.setPosition(0.8);
         try {
             Thread.sleep(800);
@@ -283,6 +311,29 @@ public class BlueSideFarStack extends LinearOpMode {
         };
         rights.setPosition(0.0);
         lefts.setPosition(0.0);
+        drive.followTrajectorySequence(stacktraj);
+        release.setPosition(0);
+       drive.followTrajectorySequence(scoretraj);
+       release.setPosition(0.8);
+        try {
+            Thread.sleep(800);
+        } catch (InterruptedException e){
+            System.out.println("Oops fucky wucky");
+        };
+
+        boolean slidesTop = false;
+
+
+        rights.setPosition(0.0);
+        lefts.setPosition(0.0);
+        intake.setPower(0);
+        release.setPosition(0.8);
+        try {
+            Thread.sleep(800);
+        } catch (InterruptedException e){
+            System.out.println("Oops fucky wucky");
+        };
+
 
 
         TrajectorySequence fin = drive.trajectorySequenceBuilder(finaltraj.end())
@@ -294,7 +345,7 @@ public class BlueSideFarStack extends LinearOpMode {
                 })
                 .build();
 
-        drive.followTrajectorySequence(fin);
+        //drive.followTrajectorySequence(fin);
 
 
 
@@ -307,14 +358,27 @@ public class BlueSideFarStack extends LinearOpMode {
     }
 }
 
-/*TrajectorySequence untitled0 = drive.trajectorySequenceBuilder(new Pose2d(-34.25, 59.54, Math.toRadians(-90.00)))
-.lineToSplineHeading(new Pose2d(-37.09, 13.68, Math.toRadians(90.00)))
-.lineTo(new Vector2d(-37.14, 8.62))
-.lineTo(new Vector2d(-17.95, 9.67))
-.lineTo(new Vector2d(10.60, 9.21))
-.lineTo(new Vector2d(37.93, 10.60))
-.lineToSplineHeading(new Pose2d(46.25, 13.77, Math.toRadians(180.00)))
-.splineToConstantHeading(new Vector2d(49.25, 35.01), Math.toRadians(0.00))
-.build();
+/*.lineToConstantHeading(new Vector2d(-35, 9))
+                .addDisplacementMarker(() -> {
+                    intake.setPower(-1);
+                })
+                .addDisplacementMarker(70, () -> {
+                    intake.setPower(0);
+                })
+
+
+                .addDisplacementMarker(65, () -> {
+                    rights.setPosition(0.47);
+                    lefts.setPosition(0.47);
+                })
+                .waitSeconds(0.1)
+                .lineToConstantHeading(new Vector2d(25, 9))
+
+                .lineToConstantHeading(new Vector2d(48.86, 29))
+
+                .back(3.3)
+                .addDisplacementMarker(() -> {
+                    release.setPosition(0);
+                })
 */
 

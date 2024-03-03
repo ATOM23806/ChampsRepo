@@ -156,11 +156,11 @@ public class TramBlue implements VisionProcessor {
         // determines the current prop position, using the left and right dividers we gave earlier
         // if we didn't find any contours which were large enough, sets it to be unfound
         PropPositions propPosition;
-        if (getHeight() < 40) {
+        if (getHeight() < 70) {
             propPosition = PropPositions.RIGHT;
         } else if (largestContourX < left.getAsDouble()) {
             propPosition = PropPositions.LEFT;
-        } else if (largestContourX > right.getAsDouble() && getHeight() > 40) {
+        } else if (largestContourX > right.getAsDouble() && getHeight() > 70) {
             propPosition = PropPositions.MIDDLE;
         } else {
             propPosition = PropPositions.RIGHT;

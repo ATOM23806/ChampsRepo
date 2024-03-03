@@ -88,64 +88,94 @@ public class BlueClose extends LinearOpMode {
 
 
         TrajectorySequence trajright = drive.trajectorySequenceBuilder(new  Pose2d(11.9, 59.7, Math.toRadians(-90)))
-                .splineTo(new Vector2d(1,36.6),Math.toRadians(-130))
-                .addDisplacementMarker(20,() -> {
-                    System.out.println("Fc");
-                    intake.setPower(-1);
+                .splineToSplineHeading(new Pose2d(7.40, 30, Math.toRadians(180.00)), Math.toRadians(198.43))
+                .forward(6)
+                .back(4)
+                .addDisplacementMarker(() -> {
+                    intake.setPower(0.3);
                 })
-                .lineToSplineHeading(new Pose2d(46.2,28))
-                .turn(Math.toRadians(180))
-                .lineToConstantHeading(new Vector2d(55.5,28))
-                .addDisplacementMarker(50, () -> {
-                    System.out.println("F");
+                .back(1)
+                .waitSeconds(.4)
+                .addDisplacementMarker(() -> {
+                    intake.setPower(-.3);
+                })
+                .forward(1)
+                .waitSeconds(.2)
+                .back(4)
+                .addDisplacementMarker(() -> {
+                    intake.setPower(0);
+                })
+                .lineToConstantHeading(new Vector2d(30.40, 32.98))
+                .addDisplacementMarker(() -> {
                     rights.setPosition(0.47);
                     lefts.setPosition(0.47);
                 })
+                .lineToConstantHeading(new Vector2d(50.81, 25.5),
+                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
+
                 .build();
 
 
 
         TrajectorySequence trajCenter = drive.trajectorySequenceBuilder(new  Pose2d(11.3, 59.7, Math.toRadians(-90)))
                 .splineToSplineHeading(new Pose2d(31.99, 20.2, Math.toRadians(180.00)), Math.toRadians(-88.09))
-                .addDisplacementMarker(() -> {
-                    System.out.println("Hello, World!");
-                    intake.setPower(-1);
-                })
+
                 .forward(15)
+                .addDisplacementMarker(() -> {
+                    intake.setPower(0.3);
+                })
+                .back(1)
+                .waitSeconds(.4)
+                .addDisplacementMarker(() -> {
+                    intake.setPower(-.3);
+                })
+                .forward(1)
+                .waitSeconds(.2)
+                .back(3)
+                .addDisplacementMarker(() -> {
+                    intake.setPower(0);
+                })
+
                 .addDisplacementMarker(() -> {
                     System.out.println("Stopping Intake!");
                     rights.setPosition(0.47);
                     lefts.setPosition(0.47);
                 })
-                .lineToConstantHeading(new Vector2d(55,36.3))
-                .addDisplacementMarker(() -> {
-                    intake.setPower(0);
-                })
-                .addDisplacementMarker(() ->{
+                .lineToConstantHeading(new Vector2d(50,35.7),
+                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
 
-                })
                 .build();
 
 
 
         TrajectorySequence trajleft = drive.trajectorySequenceBuilder(new  Pose2d(11.3, 59.7, Math.toRadians(-90)))
-                .splineTo(new Vector2d(12,39),Math.toRadians(-60))
-                .addDisplacementMarker(20,() -> {
-                    System.out.println("Fc");
-                    intake.setPower(-1);
+                .splineToConstantHeading(new Vector2d(19, 35.18), Math.toRadians(262.87))
+                .addDisplacementMarker(() -> {
+                    intake.setPower(0.3);
                 })
-                .back(6)
-                .turn(Math.toRadians(60))
-                .strafeLeft(6)
-                .splineToConstantHeading(new Vector2d(46.7,40),Math.toRadians(0))
-                .turn(Math.toRadians(180))
-                .lineToConstantHeading(new Vector2d(54.2,40))
-                .addDisplacementMarker(50, () -> {
+                .back(1)
+                .waitSeconds(.4)
+                .addDisplacementMarker(() -> {
+                    intake.setPower(-.3);
+                })
+                .forward(1)
+                .waitSeconds(.2)
+                .back(3)
+                .addDisplacementMarker(() -> {
+                    intake.setPower(0);
+                })
+                .lineToConstantHeading(new Vector2d(24.07, 45.01))
+                .addDisplacementMarker(() -> {
                     System.out.println("Stopping Intake!");
                     rights.setPosition(0.47);
                     lefts.setPosition(0.47);
-                    intake.setPower(0);
                 })
+                .splineToSplineHeading(new Pose2d(49.82, 39.6, Math.toRadians(180.00)), Math.toRadians(-17.16),
+                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
+
                 .build();
 
         switch (recordedPropPosition) {
@@ -181,11 +211,16 @@ public class BlueClose extends LinearOpMode {
 
         TrajectorySequence fin = drive.trajectorySequenceBuilder(finaltraj.end())
                 .forward(10)
-                .lineToConstantHeading(new Vector2d( 39.2,60))
-                .lineToConstantHeading(new Vector2d(60,60))
                 .addDisplacementMarker(70, () -> {
                     release.setPosition(0);
                 })
+                .lineToConstantHeading(new Vector2d( 39.2,60),
+                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
+                .lineToConstantHeading(new Vector2d(60,60),
+                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
+
                 .build();
 
         drive.followTrajectorySequence(fin);

@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.function.DoubleSupplier;
 
-public class FarTram implements VisionProcessor {
+public class FarTramRed implements VisionProcessor {
     private final DoubleSupplier minArea, left, right;
     private final Scalar upper; // lower bounds for masking
     private final Scalar lower; // upper bounds for masking
@@ -48,7 +48,7 @@ public class FarTram implements VisionProcessor {
      * @param left    the dividing point for the prop to be on the left
      * @param right   the diving point for the prop to be on the right
      */
-    public FarTram(@NonNull Scalar lower, @NonNull Scalar upper, DoubleSupplier minArea, DoubleSupplier left, DoubleSupplier right) {
+    public FarTramRed(@NonNull Scalar lower, @NonNull Scalar upper, DoubleSupplier minArea, DoubleSupplier left, DoubleSupplier right) {
         this.contours = new ArrayList<>();
         this.lower = lower;
         this.upper = upper;
@@ -160,7 +160,7 @@ public class FarTram implements VisionProcessor {
             propPosition = PropPositions.LEFT;
         } else if (largestContourX < left.getAsDouble()) {
             propPosition = PropPositions.MIDDLE;
-        } else if (largestContourX > right.getAsDouble() && getHeight() > 80) {
+        } else if (largestContourX > right.getAsDouble() && getHeight() > 90) {
             propPosition = PropPositions.RIGHT;
         } else {
             propPosition = PropPositions.LEFT;

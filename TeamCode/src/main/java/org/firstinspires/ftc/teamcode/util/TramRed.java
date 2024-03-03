@@ -156,7 +156,7 @@ public class TramRed implements VisionProcessor {
         // determines the current prop position, using the left and right dividers we gave earlier
         // if we didn't find any contours which were large enough, sets it to be unfound
         PropPositions propPosition;
-        if (getHeight() < 40) {
+        if (getHeight() < 60) {
             propPosition = PropPositions.LEFT;
         } else if (largestContourX < left.getAsDouble()) {
             propPosition = PropPositions.MIDDLE;

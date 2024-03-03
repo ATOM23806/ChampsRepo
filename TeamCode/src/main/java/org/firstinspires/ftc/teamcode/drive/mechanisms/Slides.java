@@ -33,6 +33,22 @@ public final class Slides {
         rightlift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
+    public void autoSlides(int target) {
+        leftlift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightlift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        leftlift.setPower(1);
+        rightlift.setPower(1);
+        leftlift.setTargetPosition(0);
+        rightlift.setTargetPosition(0);
+
+        leftlift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightlift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        leftlift.setTargetPosition(target);
+        rightlift.setTargetPosition(target);
+    }
+
     int lastError = 0;
     double Kp = 0.004;
     double Ki = 0;
@@ -58,7 +74,7 @@ public final class Slides {
             lastError = error;
             timer.reset();
         }
-        return Math.abs(error) > 10;
+        return Math.abs(error) > 20;
     }
 
 

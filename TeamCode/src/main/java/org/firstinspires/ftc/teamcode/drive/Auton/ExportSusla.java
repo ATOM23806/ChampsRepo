@@ -12,12 +12,11 @@ public class ExportSusla extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-        TrajectorySequence trajCenter = drive.trajectorySequenceBuilder(new Pose2d(-64.7, 25, Math.toRadians(180)))
-                .splineToConstantHeading(new Vector2d(29.61, 12.78), Math.toRadians(13.00))
-                .lineToConstantHeading(new Vector2d(48.00, 29))
-                .addDisplacementMarker(65, () -> {
-                    System.out.println("s");
-                })
+        TrajectorySequence trajCenter = drive.trajectorySequenceBuilder(new Pose2d(11.3, -59.7, Math.toRadians(90)))
+                .lineToConstantHeading(new Vector2d(11.3,-32.9))
+                .turn(Math.toRadians(90))
+
+                .lineToConstantHeading(new Vector2d(52.1,-32.9))
 
 
 

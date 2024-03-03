@@ -7,6 +7,8 @@ import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -27,7 +29,8 @@ public class RedFarSide extends LinearOpMode {
     private TramRed redTram;
     private RevColorSensorV3 colorSensorV3;
     private Servo release;
-    Slides slides;
+    private DcMotor leftlift,rightlift;
+
 
     private Pose2d startingPose;
     @Override
@@ -39,8 +42,17 @@ public class RedFarSide extends LinearOpMode {
         lefts = hardwareMap.get(Servo.class, "lA");
         intake = hardwareMap.get(CRServo.class, "in");
         release = hardwareMap.get(Servo.class, "release");
-        slides = new Slides(hardwareMap);
-        slides.resetEnc();
+
+        leftlift = hardwareMap.get(DcMotor.class, "leftlift");
+        rightlift = hardwareMap.get(DcMotor.class, "rightlift");
+        leftlift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightlift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftlift.setTargetPosition(0);
+        rightlift.setTargetPosition(0);
+        leftlift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightlift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        rightlift.setDirection(DcMotorSimple.Direction.REVERSE);
 
         Scalar lower = new Scalar(150, 100, 100);
         Scalar upper = new Scalar(180, 255, 255);
@@ -91,91 +103,120 @@ public class RedFarSide extends LinearOpMode {
 
 
         TrajectorySequence trajleft = drive.trajectorySequenceBuilder(startingPose)
+                .strafeLeft(3)
                 .lineTo(new Vector2d(-40.34, -45.76))
-                .splineToSplineHeading(new Pose2d(-47.28, -17.98, Math.toRadians(270.00)), Math.toRadians(107.10))
-                .addDisplacementMarker(() -> {
-                    intake.setPower(-0.5);
-                })
+                .splineToSplineHeading(new Pose2d(-47, -17.98, Math.toRadians(270.00)), Math.toRadians(107.10))
+
                 .forward(3.5)
-                .back(3.5)
-                .splineToSplineHeading(new Pose2d(-33.81, -11.59, Math.toRadians(180.00)), Math.toRadians(0.00))
+                .addDisplacementMarker(() -> {
+                    intake.setPower(0.3);
+                })
+                .back(1)
+                .waitSeconds(.6)
                 .addDisplacementMarker(() -> {
                     intake.setPower(0);
                 })
-                .lineToConstantHeading(new Vector2d(40.89, -10.48))
-                .addDisplacementMarker(120, () -> {
+                .back(3.5)
+                .splineToSplineHeading(new Pose2d(-33.81, -13, Math.toRadians(180.00)), Math.toRadians(0.00),
+                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
+
+                .lineToConstantHeading(new Vector2d(30.89, -14.5))
+                .addDisplacementMarker( () -> {
                     System.out.println("Stopping Intake!");
                     rights.setPosition(0.47);
                     lefts.setPosition(0.47);
                 })
-                .splineToConstantHeading(new Vector2d(49.64, -29.92), Math.toRadians(-23.20))
-                .back(4)
+                .waitSeconds(5)
+                .splineToConstantHeading(new Vector2d(49.64, -31.5), Math.toRadians(-23.20))
+                .back(8,
+                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
                 .build();
 
 
 
         //TODO: Verify middle
         TrajectorySequence trajCenter = drive.trajectorySequenceBuilder(startingPose)
-                .strafeLeft(4)
+                .strafeLeft(6)
 
-                .lineToSplineHeading(new Pose2d(-37.09, -13.68, Math.toRadians(270.00)))
+                .lineToSplineHeading(new Pose2d(-41.09, -12.68, Math.toRadians(270.00)),
+                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
+                .strafeLeft(2)
+
+
                 .addDisplacementMarker(() -> {
-                    intake.setPower(-0.5);
+                    intake.setPower(0.3);
                 })
-
-                .back(6)
-                .lineTo(new Vector2d(-35.14, -8.62))
-                .lineTo(new Vector2d(-17.95, -8.67))
+                .back(1)
+                .waitSeconds(.6)
                 .addDisplacementMarker(() -> {
                     intake.setPower(0);
                 })
 
-                .lineTo(new Vector2d(10.60, -8.21))
-                .addDisplacementMarker(120, () -> {
+                .back(4)
+
+                .lineToSplineHeading(new Pose2d(36.35, -13.18, Math.toRadians(180.00)))
+                .addDisplacementMarker( () -> {
                     System.out.println("Stopping Intake!");
                     rights.setPosition(0.47);
                     lefts.setPosition(0.47);
                 })
+                .waitSeconds(7)
+                .splineToConstantHeading(new Vector2d(50.81, -31), Math.toRadians(264.81))
 
-                .waitSeconds(5)
-                .lineTo(new Vector2d(37.93, -10.60))
-                .lineToSplineHeading(new Pose2d(41.69, -17.73, Math.toRadians(180.00)))
-                .splineToSplineHeading(new Pose2d(49.82, -28.0, Math.toRadians(180.00)), Math.toRadians(18.44))
-                .back(5)
+                .back(7,
+                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
 
                 .build();
 
 
 
         TrajectorySequence trajright = drive.trajectorySequenceBuilder(startingPose)
-                .splineToSplineHeading(new Pose2d(-35.55, -31.64, Math.toRadians(0.00)), Math.toRadians(36.27))
-                .addDisplacementMarker(() -> {
-                    intake.setPower(-0.5);
-                })
-                .forward(5)
+                .forward(3)
+                .strafeLeft(3)
+                .splineToSplineHeading(new Pose2d(-33.78, -34.5, Math.toRadians(0.00)), Math.toRadians(-17.11),
+                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
+                .forward(4)
                 .back(5)
-                .lineTo(new Vector2d(-41.27, -19.48))
-                .splineToSplineHeading(new Pose2d(-29.82, -11.52, Math.toRadians(180.00)), Math.toRadians(9.06))
+                .addDisplacementMarker(() -> {
+                    intake.setPower(0.3);
+                })
+                .back(3)
+                .waitSeconds(.4)
+                .addDisplacementMarker(() -> {
+                    intake.setPower(-.2);
+                })
+                .forward(1)
+                .waitSeconds(.2)
+                .back(6)
                 .addDisplacementMarker(() -> {
                     intake.setPower(0);
                 })
-                .lineToConstantHeading(new Vector2d(40.62, -11.32))
-                .addDisplacementMarker(120, () -> {
+                .lineToConstantHeading(new Vector2d(-35.75, -10.20))
+                .lineToSplineHeading(new Pose2d(41.69, -10.60, Math.toRadians(180.00)))
+                .addDisplacementMarker( () -> {
                     System.out.println("Stopping Intake!");
                     rights.setPosition(0.47);
                     lefts.setPosition(0.47);
                 })
-                .splineToConstantHeading(new Vector2d(50.21, -43.27), Math.toRadians(267.69))
-                .back(4)
+                .waitSeconds(5)
+                .lineToConstantHeading(new Vector2d(49, -33.5),
+                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
+
+                .back(9,
+                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
                 .build();
 
         TrajectorySequence finaltraj = null;
 
         switch (recordedPropPosition) {
             case LEFT:
-                finaltraj = trajleft;
-                break;
-            case UNFOUND:
                 finaltraj = trajleft;
                 break;
             case MIDDLE:
@@ -188,11 +229,24 @@ public class RedFarSide extends LinearOpMode {
 
 
 
+
+
+
+
+        int error;
         drive.followTrajectorySequence(finaltraj);
 
-        boolean slidesTop = false;
-
-
+        do {
+            error = 320 + rightlift.getCurrentPosition();
+            double power = 0.004 * error;
+            leftlift.setPower(power);
+            rightlift.setPower(power);
+            telemetry.addData("pos", rightlift.getCurrentPosition());
+            telemetry.update();
+        }
+        while (Math.abs(error) > 10);
+        leftlift.setPower(0);
+        rightlift.setPower(0);
 
         intake.setPower(0);
         release.setPosition(0.8);
@@ -201,18 +255,38 @@ public class RedFarSide extends LinearOpMode {
         } catch (InterruptedException e){
             System.out.println("Oops fucky wucky");
         };
-        rights.setPosition(0.0);
-        lefts.setPosition(0.0);
 
         TrajectorySequence fin = drive.trajectorySequenceBuilder(finaltraj.end())
-                .forward(13)
-                .splineToConstantHeading(new Vector2d(60.06, -11.32), Math.toRadians(-43.15))
+                .forward(10)
+                .addDisplacementMarker(() -> {
+                    rights.setPosition(0.0);
+                    lefts.setPosition(0.0);
+                })
+
+                .strafeRight(10)
+                .splineToConstantHeading(new Vector2d(55, -13), Math.toRadians(-43.15),
+                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
                 .addDisplacementMarker(() -> {
                     release.setPosition(0);
                 })
                 .build();
 
         drive.followTrajectorySequence(fin);
+
+        do {
+            error = 0 + rightlift.getCurrentPosition();
+            double power = 0.004 * error ;
+            leftlift.setPower(power);
+            rightlift.setPower(power);
+            telemetry.addData("zlpos", leftlift.getCurrentPosition());
+            telemetry.addData("zrpos", rightlift.getCurrentPosition());
+            telemetry.update() ;
+        }
+        while ( Math.abs(error) > 20) ;
+
+        leftlift.setPower(0);
+        rightlift.setPower(0);
 
 
         while(!isStopRequested()) {

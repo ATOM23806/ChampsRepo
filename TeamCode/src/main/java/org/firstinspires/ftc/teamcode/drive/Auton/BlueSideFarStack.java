@@ -42,7 +42,7 @@ public class BlueSideFarStack extends LinearOpMode {
         release.setPosition(0);
         rights.setPosition(0.20);
         lefts.setPosition(0.20);
-        flick.setPosition(0.77);
+        flick.setPosition(0.8);
 
 
         Scalar lower = new Scalar(92, 174, 60);
@@ -169,11 +169,11 @@ public class BlueSideFarStack extends LinearOpMode {
                 .lineToConstantHeading(new Vector2d(-51.68, 10.84))
                 .lineToConstantHeading(new Vector2d(-58.45, 10.45))
                 .addDisplacementMarker(() -> {
-                    flick.setPosition(.712);
+                    flick.setPosition(.4);
                 })
                 .back(4)
                 .addDisplacementMarker(() -> {
-                    flick.setPosition(.77);
+                    flick.setPosition(.8);
                 })
                 .addDisplacementMarker(() -> {
                     intake.setPower(1);

@@ -123,7 +123,7 @@ public class SuperQualsTeleOp extends LinearOpMode {
             }
 
             if(gamepad2.y) {
-                nahIdMog.setPosition(0.2);
+                nahIdMog.setPosition(0.55);
             }
         }
 

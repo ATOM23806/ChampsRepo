@@ -17,6 +17,8 @@ public class SuperQualsTeleOp extends LinearOpMode {
     private SampleMecanumDrive drive;
     private CRServo intake;
     private Servo release;
+    public volatile double yaw;
+
     enum liftPos {
         ZERO,
         LOW,
@@ -61,22 +63,13 @@ public class SuperQualsTeleOp extends LinearOpMode {
             }
 
 
-            if(pos == liftPos.ZERO || normSpeed) {
-                drive.setWeightedDrivePower(
-                        new Pose2d(
-                                -gamepad1.left_stick_y,
-                                -gamepad1.left_stick_x,
-                                -gamepad1.right_stick_x
-                        )
-                );
-            } else {
-                drive.setWeightedDrivePower(
-                        new Pose2d(
-                                -gamepad1.left_stick_y/2.5,
-                                -gamepad1.left_stick_x/2.5,
-                                -gamepad1.right_stick_x/2.5
-                        )
-                );
+            double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
+            double x = gamepad1.left_stick_x;
+            double rx = gamepad1.right_stick_x;
+            drive.drive(y, x, rx);
+
+            if (gamepad1.right_stick_button) {
+                drive.navx.zeroYaw();
             }
 
             testslides.PIDMotion(encPos);
@@ -127,5 +120,21 @@ public class SuperQualsTeleOp extends LinearOpMode {
             }
         }
 
+    }
+
+    public class gyroThread implements Runnable {
+        @Override
+        public void run() {
+            while (!isStopRequested()) {
+                synchronized (this) {
+                    yaw = drive.navx.getYaw();
+                }
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
     }
 }

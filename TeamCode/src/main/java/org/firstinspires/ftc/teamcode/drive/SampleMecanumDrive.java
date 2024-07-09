@@ -17,6 +17,8 @@ import com.acmerobotics.roadrunner.trajectory.constraints.MinVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAccelerationConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
+import com.github.i_n_t_robotics.zhonyas.navx.AHRS;
+import com.qualcomm.hardware.kauailabs.NavxMicroNavigationSensor;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -29,6 +31,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.drive.TeleOp.SuperQualsTeleOp;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
@@ -55,7 +58,8 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
  */
 @Config
 public class SampleMecanumDrive extends MecanumDrive {
-    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(4.7, 0, 0);
+    private SuperQualsTeleOp teleOp = new SuperQualsTeleOp();
+    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(4.75, 0, 0);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(2, 0, 0);
 
     public static double LATERAL_MULTIPLIER = 1.15384615385;
@@ -63,6 +67,8 @@ public class SampleMecanumDrive extends MecanumDrive {
     public static double VX_WEIGHT = 1;
     public static double VY_WEIGHT = 1;
     public static double OMEGA_WEIGHT = 1;
+    public final AHRS navx;
+
 
     private TrajectorySequenceRunner trajectorySequenceRunner;
 
@@ -104,6 +110,9 @@ public class SampleMecanumDrive extends MecanumDrive {
         leftRear = hardwareMap.get(DcMotorEx.class, "Backleft");
         rightRear = hardwareMap.get(DcMotorEx.class, "Backright");
         rightFront = hardwareMap.get(DcMotorEx.class, "Frontright");
+
+        navx =  AHRS.getInstance(hardwareMap.get(NavxMicroNavigationSensor.class, "navx"),
+                AHRS.DeviceDataType.kProcessedData);
 
         leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
         leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -255,6 +264,27 @@ public class SampleMecanumDrive extends MecanumDrive {
         }
 
         setDrivePower(vel);
+    }
+
+    public void drive(double y, double x, double rx) {
+        double botHeading = -Math.toRadians(teleOp.yaw);
+
+        // Rotate the movement direction counter to the bot's rotation
+        double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
+        double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
+
+        rotX = rotX * 1.1;  // Counteract imperfect strafing
+
+        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
+        double frontLeftPower = (rotY + rotX + rx) / denominator;
+        double backLeftPower = (rotY - rotX + rx) / denominator;
+        double frontRightPower = (rotY - rotX - rx) / denominator;
+        double backRightPower = (rotY + rotX - rx) / denominator;
+
+        leftFront.setPower(frontLeftPower);
+        leftRear.setPower(backLeftPower);
+        rightFront.setPower(frontRightPower);
+        rightRear.setPower(backRightPower);
     }
 
     @NonNull

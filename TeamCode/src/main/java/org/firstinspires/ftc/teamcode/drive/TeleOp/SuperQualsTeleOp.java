@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.drive.TeleOp;
 
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.github.i_n_t_robotics.zhonyas.navx.AHRS;
 import com.qualcomm.hardware.kauailabs.NavxMicroNavigationSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -13,6 +15,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDir
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
+import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.teamcode.drive.mechanisms.Slides;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -32,7 +35,12 @@ public class SuperQualsTeleOp extends LinearOpMode {
     public VisionPortal visionPortal;
     public AprilTagProcessor aprilTag;
     public AprilTagDetection desiredTag;
+    public Pose2d currentPose;
+
     private boolean USE_WEBCAM = true;
+
+    private final Vector2d cameraOffset = new Vector2d(0, 0);
+
 
     public static double SPEED_GAIN = 0.03;
     public static double STRAFE_GAIN = 0.015;
@@ -41,7 +49,7 @@ public class SuperQualsTeleOp extends LinearOpMode {
     final double MAX_AUTO_STRAFE= 0.5;   //  Clip the approach speed to this max value (adjust for your robot)
     final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)
 
-    public static int DESIRED_TAG_ID = 5;
+    public static int DESIRED_TAG_ID = -1;
     public double DESIRED_DISTANCE = 6;
 
     public boolean targetFound;
@@ -94,6 +102,7 @@ public class SuperQualsTeleOp extends LinearOpMode {
 
             targetFound = false;
             desiredTag = null;
+            currentPose = drive.getPoseEstimate();
 
             // Step through the list of detected tags and look for a matching tag
             List<AprilTagDetection> currentDetections = aprilTag.getDetections();
@@ -122,6 +131,12 @@ public class SuperQualsTeleOp extends LinearOpMode {
                 telemetry.addData("Range", "%5.1f inches", desiredTag.ftcPose.range);
                 telemetry.addData("Bearing", "%3.0f degrees", desiredTag.ftcPose.bearing);
                 telemetry.addData("Yaw", "%3.0f degrees", desiredTag.ftcPose.yaw);
+
+                Vector2d fcPose = getFCPosition(desiredTag, currentPose.getHeading());
+
+                telemetry.addData("fcX", fcPose.getX());
+                telemetry.addData("fcY", fcPose.getY());
+
             } else {
                 telemetry.addData("\n>", "Drive using joysticks to find valid target\n");
             }
@@ -147,13 +162,13 @@ public class SuperQualsTeleOp extends LinearOpMode {
             double x = gamepad1.left_stick_x;
             double rx = gamepad1.right_stick_x;
 
-            /*if (gamepad1.dpad_left && targetFound) {
+            if (gamepad1.dpad_left && targetFound) {
                 driveToTag();
             } else {
-                drive.drive(y, x, rx);
-            }*/
+                drive(y, x, rx);
+            }
 
-            drive(y, x, rx);
+           // drive(y, x, rx);
 
 
             if (gamepad1.right_stick_button) {
@@ -206,6 +221,14 @@ public class SuperQualsTeleOp extends LinearOpMode {
             if(gamepad2.y) {
                 nahIdMog.setPosition(0.55);
             }
+
+
+            drive.update();
+
+            telemetry.addData("x", currentPose.getX());
+            telemetry.addData("y", currentPose.getY());
+            telemetry.addData("rot", currentPose.getHeading());
+            telemetry.update();
         }
 
     }
@@ -304,6 +327,35 @@ public class SuperQualsTeleOp extends LinearOpMode {
                     .addProcessor(aprilTag)
                     .build();
         }
+    }
+
+    public Vector2d getFCPosition(AprilTagDetection detection, double botheading) {
+        // get coordinates of the robot in RC coordinates
+        // ensure offsets are RC
+        double x = detection.ftcPose.x - cameraOffset.getX();
+        double y = detection.ftcPose.y - cameraOffset.getY();
+
+        // invert heading to correct properly
+        botheading = -botheading;
+
+        // rotate RC coordinates to be field-centric
+        double x2 = x * Math.cos(botheading) + y * Math.sin(botheading);
+        double y2 = x * -Math.sin(botheading) + y * Math.cos(botheading);
+        double absX;
+        double absY;
+
+        // add FC coordinates to apriltag position
+        VectorF tagpose = detection.metadata.fieldPosition;
+        if (detection.metadata.id <= 6) { // first 6 are backdrop tags
+            absX = -tagpose.get(0) + y2;
+            absY = tagpose.get(1) - x2;
+
+        } else { // then just reverse positions
+            absX = tagpose.get(0) - y2;
+            absY = tagpose.get(1) + x2;
+        }
+        // Don't send over a pose, as apriltag heading can be off (see discord)
+        return new Vector2d(absX, absY);
     }
 
     public void drive(double y, double x, double rx) {

@@ -102,7 +102,6 @@ public class SuperQualsTeleOp extends LinearOpMode {
 
             targetFound = false;
             desiredTag = null;
-            currentPose = drive.getPoseEstimate();
 
             // Step through the list of detected tags and look for a matching tag
             List<AprilTagDetection> currentDetections = aprilTag.getDetections();
@@ -132,10 +131,16 @@ public class SuperQualsTeleOp extends LinearOpMode {
                 telemetry.addData("Bearing", "%3.0f degrees", desiredTag.ftcPose.bearing);
                 telemetry.addData("Yaw", "%3.0f degrees", desiredTag.ftcPose.yaw);
 
-                Vector2d fcPose = getFCPosition(desiredTag, currentPose.getHeading());
+                currentPose = cameraToRobotPose(desiredTag);
+
+                Vector2d fcPose = getFCPositionIMU(desiredTag, currentPose, Math.toRadians(yaw));
+                Pose2d fcPoseTag = getFCPositionTag(desiredTag, currentPose);
 
                 telemetry.addData("fcX", fcPose.getX());
                 telemetry.addData("fcY", fcPose.getY());
+                telemetry.addData("IMU Heading", Math.toRadians(yaw));
+                telemetry.addData("tag heading", fcPoseTag.getHeading());
+
 
             } else {
                 telemetry.addData("\n>", "Drive using joysticks to find valid target\n");
@@ -329,14 +334,28 @@ public class SuperQualsTeleOp extends LinearOpMode {
         }
     }
 
-    public Vector2d getFCPosition(AprilTagDetection detection, double botheading) {
-        // get coordinates of the robot in RC coordinates
-        // ensure offsets are RC
-        double x = detection.ftcPose.x - cameraOffset.getX();
-        double y = detection.ftcPose.y - cameraOffset.getY();
+    public Pose2d cameraToRobotPose(AprilTagDetection detection) {
+        double tagX = detection.ftcPose.x;
+        double tagY = detection.ftcPose.y;
 
-        // invert heading to correct properly
-        botheading = -botheading;
+        // Adjust for camera offset and orientation
+        double robotX = -tagX - 9.0;
+        double robotY = -tagY - 0;
+
+        // Assuming your camera is inverted (180 degrees rotated)
+        double robotHeading = Math.toRadians(detection.ftcPose.yaw) + Math.PI;  // Rotate by 180 degrees
+
+        return new Pose2d(robotX, robotY, robotHeading);
+    }
+
+    //TODO TEST april tag heading vs navxheading
+    public Vector2d getFCPositionIMU(AprilTagDetection detection, Pose2d robotPose, double botheading) {
+        // get coordinates of the robot in RC coordinates
+        double x = robotPose.getX();
+        double y = robotPose.getY();
+
+        // invert heading to correct properly + account for camera being flipped 180
+        botheading = -botheading + Math.PI;
 
         // rotate RC coordinates to be field-centric
         double x2 = x * Math.cos(botheading) + y * Math.sin(botheading);
@@ -345,6 +364,7 @@ public class SuperQualsTeleOp extends LinearOpMode {
         double absY;
 
         // add FC coordinates to apriltag position
+        //TODO CHECK INVERSIONS
         VectorF tagpose = detection.metadata.fieldPosition;
         if (detection.metadata.id <= 6) { // first 6 are backdrop tags
             absX = -tagpose.get(0) + y2;
@@ -356,6 +376,33 @@ public class SuperQualsTeleOp extends LinearOpMode {
         }
         // Don't send over a pose, as apriltag heading can be off (see discord)
         return new Vector2d(absX, absY);
+    }
+
+    private Pose2d getFCPositionTag(AprilTagDetection detection, Pose2d robotPose) {
+        double x = robotPose.getX();
+        double y = robotPose.getY();
+        // invert heading to correct properly
+        double botheading = robotPose.getHeading();
+
+        // rotate RC coordinates to be field-centric
+        double x2 = x * Math.cos(botheading) + y * Math.sin(botheading);
+        double y2 = x * -Math.sin(botheading) + y * Math.cos(botheading);
+        double absX;
+        double absY;
+
+        // add FC coordinates to apriltag position
+        //TODO CHECK INVERSIONS
+        VectorF tagpose = detection.metadata.fieldPosition;
+        if (detection.metadata.id <= 6) { // first 6 are backdrop tags
+            absX = -tagpose.get(0) + y2;
+            absY = tagpose.get(1) - x2;
+
+        } else { // then just reverse positions
+            absX = tagpose.get(0) - y2;
+            absY = tagpose.get(1) + x2;
+        }
+
+        return  new Pose2d(absX, absY, botheading);
     }
 
     public void drive(double y, double x, double rx) {
@@ -388,7 +435,7 @@ public class SuperQualsTeleOp extends LinearOpMode {
                     telemetry.addData("yaw", yaw);
                 }
                 try {
-                    Thread.sleep(50);
+                    Thread.sleep(10);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }

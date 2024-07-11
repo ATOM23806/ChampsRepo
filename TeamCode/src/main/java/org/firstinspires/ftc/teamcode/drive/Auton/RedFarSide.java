@@ -226,13 +226,6 @@ public class RedFarSide extends LinearOpMode {
                 finaltraj = trajright;
         }
 
-
-
-
-
-
-
-
         int error;
         drive.followTrajectorySequence(finaltraj);
 

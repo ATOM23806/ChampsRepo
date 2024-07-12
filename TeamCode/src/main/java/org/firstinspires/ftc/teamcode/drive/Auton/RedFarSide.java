@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode.drive.Auton;
 
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
@@ -11,21 +14,43 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.drive.TeleOp.SuperQualsTeleOp;
 import org.firstinspires.ftc.teamcode.util.TramRed;
 import org.firstinspires.ftc.teamcode.drive.mechanisms.Slides;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.opencv.core.Scalar;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Autonomous (group = "Red Autos", name = "Red Side Far")
 public class RedFarSide extends LinearOpMode {
 
     private Servo rights, lefts;
     private CRServo intake;
+    //private static SuperQualsTeleOp main;
 
     private VisionPortal visionPortal;
+    public AprilTagProcessor aprilTag;
+    public AprilTagDetection desiredTag;
+    private boolean USE_WEBCAM = true;
+    public boolean targetFound;
+    public static int DESIRED_TAG_ID = -1;
+    public volatile Pose2d fcPoseTag;
+
+    FtcDashboard dashboard = FtcDashboard.getInstance();
+
     private TramRed redTram;
     private RevColorSensorV3 colorSensorV3;
     private Servo release;
@@ -33,8 +58,14 @@ public class RedFarSide extends LinearOpMode {
 
 
     private Pose2d startingPose;
+    public Telemetry supatelemetry;
     @Override
     public void runOpMode() throws InterruptedException {
+        supatelemetry = new MultipleTelemetry(this.telemetry, dashboard.getTelemetry());
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.fieldOverlay().drawImage("/images/centerstage.jpg", 0, 0, 144, 144);
+        //packet.fieldOverlay().drawImage("/dash/powerplay.png", 0, 0, 144, 144);
+        dashboard.sendTelemetryPacket(packet);
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         startingPose = new Pose2d(-34.71, -62.5, Math.toRadians(90));
         drive.setPoseEstimate(startingPose);
@@ -54,6 +85,8 @@ public class RedFarSide extends LinearOpMode {
 
         rightlift.setDirection(DcMotorSimple.Direction.REVERSE);
 
+       // main = new SuperQualsTeleOp();
+
         Scalar lower = new Scalar(150, 100, 100);
         Scalar upper = new Scalar(180, 255, 255);
 
@@ -71,6 +104,11 @@ public class RedFarSide extends LinearOpMode {
                 .addProcessor(redTram)
                 .build();
 
+        initAprilTag();
+
+       /* if (USE_WEBCAM)
+            setManualExposure(6, 250);  // Use low exposure time to reduce motion blur */
+
 
 
         release.setPosition(0);
@@ -78,15 +116,20 @@ public class RedFarSide extends LinearOpMode {
         lefts.setPosition(0.05);
 
         while(!isStarted()) {
-            telemetry.addData("Currently Recorded Position", redTram.getRecordedPropPosition());
-            telemetry.addData("Camera State", visionPortal.getCameraState());
-            telemetry.addData("Currently Detected Mass Center", "x: " + redTram.getLargestContourX() + ", y: " + redTram.getLargestContourY());
-            telemetry.addData("Currently Detected Mass Area", redTram.getLargestContourArea());
-            telemetry.addData("Fuck", redTram.getHeight());
-            telemetry.update();
+            supatelemetry.addData("Currently Recorded Position", redTram.getRecordedPropPosition());
+            supatelemetry.addData("Camera State", visionPortal.getCameraState());
+            supatelemetry.addData("Currently Detected Mass Center", "x: " + redTram.getLargestContourX() + ", y: " + redTram.getLargestContourY());
+            supatelemetry.addData("Currently Detected Mass Area", redTram.getLargestContourArea());
+            supatelemetry.addData("Fuck", redTram.getHeight());
+            supatelemetry.update();
         }
+        new Thread(new aprilThread()).start();
+
         waitForStart();
         if (isStopRequested()) return;
+
+        targetFound = false;
+        desiredTag = null;
 
 
         if (visionPortal.getCameraState() == VisionPortal.CameraState.STREAMING) {
@@ -197,18 +240,25 @@ public class RedFarSide extends LinearOpMode {
                     intake.setPower(0);
                 })
                 .lineToConstantHeading(new Vector2d(-35.75, -10.20))
-                .lineToSplineHeading(new Pose2d(41.69, -10.60, Math.toRadians(180.00)))
+                .lineToSplineHeading(new Pose2d(27.69, -10.60, Math.toRadians(180.00)))
+                //.turn(Math.toRadians(-45))
+                .lineTo(new Vector2d(23.6, -28.4))
                 .addDisplacementMarker( () -> {
                     System.out.println("Stopping Intake!");
                     rights.setPosition(0.47);
                     lefts.setPosition(0.47);
                 })
+                .addDisplacementMarker(() -> {
+                    synchronized (this) {
+                        drive.setPoseEstimate(new Pose2d(fcPoseTag.getX(), fcPoseTag.getY(), drive.getPoseEstimate().getHeading()));
+                    }
+                })
                 .waitSeconds(5)
-                .lineToConstantHeading(new Vector2d(49, -33.5),
+                .lineToConstantHeading(new Vector2d(49, -40),
                         SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
                         SampleMecanumDrive.getAccelerationConstraint(40))
 
-                .back(9,
+                .back(5,
                         SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
                         SampleMecanumDrive.getAccelerationConstraint(40))
                 .build();
@@ -226,20 +276,9 @@ public class RedFarSide extends LinearOpMode {
                 finaltraj = trajright;
         }
 
-        int error;
         drive.followTrajectorySequence(finaltraj);
 
-        do {
-            error = 320 + rightlift.getCurrentPosition();
-            double power = 0.004 * error;
-            leftlift.setPower(power);
-            rightlift.setPower(power);
-            telemetry.addData("pos", rightlift.getCurrentPosition());
-            telemetry.update();
-        }
-        while (Math.abs(error) > 10);
-        leftlift.setPower(0);
-        rightlift.setPower(0);
+
 
         intake.setPower(0);
         release.setPosition(0.8);
@@ -267,25 +306,127 @@ public class RedFarSide extends LinearOpMode {
 
         drive.followTrajectorySequence(fin);
 
-        do {
-            error = 0 + rightlift.getCurrentPosition();
-            double power = 0.004 * error ;
-            leftlift.setPower(power);
-            rightlift.setPower(power);
-            telemetry.addData("zlpos", leftlift.getCurrentPosition());
-            telemetry.addData("zrpos", rightlift.getCurrentPosition());
-            telemetry.update() ;
-        }
-        while ( Math.abs(error) > 20) ;
-
-        leftlift.setPower(0);
-        rightlift.setPower(0);
-
 
         while(!isStopRequested()) {
+            telemetry.addData("x", drive.getPoseEstimate().getX());
+            telemetry.addData("y", drive.getPoseEstimate().getY());
 
         }
 
 
+
+    }
+
+    private void initAprilTag() {
+        // Create the AprilTag processor by using a builder.
+        aprilTag = new AprilTagProcessor.Builder()
+                .setTagLibrary(SuperQualsTeleOp.getCenterStageTagLibrary())
+                .setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
+                .build();
+
+        // Adjust Image Decimation to trade-off detection-range for detection-rate.
+        // eg: Some typical detection data using a Logitech C920 WebCam
+        // Decimation = 1 ..  Detect 2" Tag from 10 feet away at 10 Frames per second
+        // Decimation = 2 ..  Detect 2" Tag from 6  feet away at 22 Frames per second
+        // Decimation = 3 ..  Detect 2" Tag from 4  feet away at 30 Frames Per Second
+        // Decimation = 3 ..  Detect 5" Tag from 10 feet away at 30 Frames Per Second
+        // Note: Decimation can be changed on-the-fly to adapt during a match.
+        aprilTag.setDecimation(2);
+
+        // Create the vision portal by using a builder.
+        if (USE_WEBCAM) {
+            visionPortal = new VisionPortal.Builder()
+                    .setCamera(hardwareMap.get(WebcamName.class, "Webcam 2"))
+                    .addProcessor(aprilTag)
+                    .build();
+        } else {
+            visionPortal = new VisionPortal.Builder()
+                    .setCamera(BuiltinCameraDirection.BACK)
+                    .addProcessor(aprilTag)
+                    .build();
+        }
+    }
+
+    private void setManualExposure(int exposureMS, int gain) {
+        // Wait for the camera to be open, then use the controls
+
+        if (visionPortal == null) {
+            return;
+        }
+
+        // Make sure camera is streaming before we try to set the exposure controls
+        if (visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
+            telemetry.addData("Camera", "Waiting");
+            telemetry.update();
+            while (!isStopRequested() && (visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING)) {
+                sleep(20);
+            }
+            telemetry.addData("Camera", "Ready");
+            telemetry.update();
+        }
+
+        // Set camera controls unless we are stopping.
+        if (!isStopRequested())
+        {
+            ExposureControl exposureControl = visionPortal.getCameraControl(ExposureControl.class);
+            if (exposureControl.getMode() != ExposureControl.Mode.Manual) {
+                exposureControl.setMode(ExposureControl.Mode.Manual);
+                sleep(50);
+            }
+            exposureControl.setExposure((long)exposureMS, TimeUnit.MILLISECONDS);
+            sleep(20);
+            GainControl gainControl = visionPortal.getCameraControl(GainControl.class);
+            gainControl.setGain(gain);
+            sleep(20);
+        }
+    }
+
+    public class aprilThread implements Runnable {
+        @Override
+        public void run() {
+            while (!isStopRequested()) {
+                synchronized (this) {
+
+                    List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+                    for (AprilTagDetection detection : currentDetections) {
+                        // Look to see if we have size info on this tag.
+                        if (detection.metadata != null) {
+                            //  Check to see if we want to track towards this tag.
+                            if ((DESIRED_TAG_ID < 0) || (detection.id == DESIRED_TAG_ID)) {
+                                // Yes, we want to use this tag.
+                                targetFound = true;
+                                desiredTag = detection;
+                                break;  // don't look any further.
+                            } else {
+                                // This tag is in the library, but we do not want to track it right now.
+                                telemetry.addData("Skipping", "Tag ID %d is not desired", detection.id);
+                            }
+                        } else {
+                            // This tag is NOT in the library, so we don't have enough information to track to it.
+                            telemetry.addData("Unknown", "Tag ID %d is not in TagLibrary", detection.id);
+                        }
+                    }
+
+                    if (targetFound) {
+                        // telemetry.addData("\n>", "HOLD Left-Bumper to Drive to Target\n");
+                        supatelemetry.addData("Found", "ID %d (%s)", desiredTag.id, desiredTag.metadata.name);
+                        supatelemetry.addData("Range", "%5.1f inches", desiredTag.ftcPose.range);
+                        // telemetry.addData("Bearing", "%3.0f degrees", desiredTag.ftcPose.bearing);
+                        supatelemetry.addData("Yaw", "%3.0f degrees", desiredTag.ftcPose.yaw);
+
+                        Pose2d currentPose = SuperQualsTeleOp.cameraToRobotPose(desiredTag);
+                        fcPoseTag = SuperQualsTeleOp.getFCPositionTag(desiredTag, currentPose);
+                    }
+                    supatelemetry.update();
+                    try {
+
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+
+            }
+        }
     }
 }

@@ -23,6 +23,7 @@ import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Quaternion;
+import org.firstinspires.ftc.robotcore.external.stream.CameraStreamSource;
 import org.firstinspires.ftc.teamcode.drive.mechanisms.Slides;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -90,6 +91,7 @@ public class SuperQualsTeleOp extends LinearOpMode {
         packet.fieldOverlay().drawImage("/images/centerstage.jpg", 0, 0, 144, 144);
         //packet.fieldOverlay().drawImage("/dash/powerplay.png", 0, 0, 144, 144);
         dashboard.sendTelemetryPacket(packet);
+        //TODO Test livestreaming on dashboard
         initAprilTag();
         drive = new SampleMecanumDrive(hardwareMap);
         rights = hardwareMap.get(Servo.class, "rA");
@@ -110,6 +112,7 @@ public class SuperQualsTeleOp extends LinearOpMode {
 
         if (USE_WEBCAM)
             setManualExposure(6, 250);  // Use low exposure time to reduce motion blur
+
 
         // Wait for driver to press start
         telemetry.addData("Camera preview on/off", "3 dots, Camera Stream");

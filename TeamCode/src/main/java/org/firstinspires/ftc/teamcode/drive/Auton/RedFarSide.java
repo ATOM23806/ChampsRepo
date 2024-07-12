@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
@@ -39,7 +40,7 @@ public class RedFarSide extends LinearOpMode {
 
     private Servo rights, lefts;
     private CRServo intake;
-    //private static SuperQualsTeleOp main;
+    private SampleMecanumDrive drive;
 
     private VisionPortal visionPortal;
     public AprilTagProcessor aprilTag;
@@ -47,6 +48,18 @@ public class RedFarSide extends LinearOpMode {
     private boolean USE_WEBCAM = true;
     public boolean targetFound;
     public static int DESIRED_TAG_ID = -1;
+    private static double DESIRED_DISTANCE = 12.0;
+
+    public static double SPEED_GAIN  =  0.02  ;
+    public static double STRAFE_GAIN =  0.015 ;
+    public static double TURN_GAIN   =  0.01  ;
+
+    public static double MAX_AUTO_SPEED = 0.5;
+    public static double MAX_AUTO_STRAFE= 0.5;
+    public static double MAX_AUTO_TURN  = 0.3;
+
+    public double driv, strafe, turn;
+
     public volatile Pose2d fcPoseTag;
 
     FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -55,6 +68,7 @@ public class RedFarSide extends LinearOpMode {
     private RevColorSensorV3 colorSensorV3;
     private Servo release;
     private DcMotor leftlift,rightlift;
+    private boolean track = false;
 
 
     private Pose2d startingPose;
@@ -66,7 +80,7 @@ public class RedFarSide extends LinearOpMode {
         packet.fieldOverlay().drawImage("/images/centerstage.jpg", 0, 0, 144, 144);
         //packet.fieldOverlay().drawImage("/dash/powerplay.png", 0, 0, 144, 144);
         dashboard.sendTelemetryPacket(packet);
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        drive = new SampleMecanumDrive(hardwareMap);
         startingPose = new Pose2d(-34.71, -62.5, Math.toRadians(90));
         drive.setPoseEstimate(startingPose);
         rights = hardwareMap.get(Servo.class, "rA");
@@ -84,6 +98,10 @@ public class RedFarSide extends LinearOpMode {
         rightlift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         rightlift.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        double  driv           = 0;        // Desired forward power/speed (-1 to +1)
+        double  strafe          = 0;        // Desired strafe power/speed (-1 to +1)
+        double  turn            = 0;        // Desired turning power/speed (-1 to +1)
 
        // main = new SuperQualsTeleOp();
 
@@ -156,9 +174,12 @@ public class RedFarSide extends LinearOpMode {
                 })
                 .back(1)
                 .waitSeconds(.6)
-                .addDisplacementMarker(() -> {
+                .addDisplacementMarker( () -> {
+
                     intake.setPower(0);
+
                 })
+
                 .back(3.5)
                 .splineToSplineHeading(new Pose2d(-33.81, -13, Math.toRadians(180.00)), Math.toRadians(0.00),
                         SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
@@ -166,15 +187,12 @@ public class RedFarSide extends LinearOpMode {
 
                 .lineToConstantHeading(new Vector2d(30.89, -14.5))
                 .addDisplacementMarker( () -> {
-                    System.out.println("Stopping Intake!");
+
                     rights.setPosition(0.47);
                     lefts.setPosition(0.47);
                 })
-                .waitSeconds(5)
-                .splineToConstantHeading(new Vector2d(49.64, -31.5), Math.toRadians(-23.20))
-                .back(8,
-                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                .lineTo(new Vector2d(24, -22))
+                .turn(Math.toRadians(-10))
                 .build();
 
 
@@ -268,6 +286,7 @@ public class RedFarSide extends LinearOpMode {
         switch (recordedPropPosition) {
             case LEFT:
                 finaltraj = trajleft;
+                track = true;
                 break;
             case MIDDLE:
                 finaltraj = trajCenter;
@@ -278,6 +297,21 @@ public class RedFarSide extends LinearOpMode {
 
         drive.followTrajectorySequence(finaltraj);
 
+        if (track) {
+            do {
+                double  rangeError      = (desiredTag.ftcPose.range - DESIRED_DISTANCE);
+                double  headingError    = desiredTag.ftcPose.bearing;
+                double  yawError        = desiredTag.ftcPose.yaw;
+
+                // Use the speed and turn "gains" to calculate how we want the robot to move.
+                driv  = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
+                turn   = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
+                strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
+                moveRobot(driv, strafe, turn);
+            }
+
+            while ((desiredTag.ftcPose.range - DESIRED_DISTANCE) > 1);
+        }
 
 
         intake.setPower(0);
@@ -379,6 +413,32 @@ public class RedFarSide extends LinearOpMode {
             gainControl.setGain(gain);
             sleep(20);
         }
+    }
+
+    public void moveRobot(double x, double y, double yaw) {
+        // Calculate wheel powers.
+        double leftFrontPower    =  x -y -yaw;
+        double rightFrontPower   =  x +y +yaw;
+        double leftBackPower     =  x +y -yaw;
+        double rightBackPower    =  x -y +yaw;
+
+        // Normalize wheel powers to be less than 1.0
+        double max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
+        max = Math.max(max, Math.abs(leftBackPower));
+        max = Math.max(max, Math.abs(rightBackPower));
+
+        if (max > 1.0) {
+            leftFrontPower /= max;
+            rightFrontPower /= max;
+            leftBackPower /= max;
+            rightBackPower /= max;
+        }
+
+        // Send powers to the wheels.
+        drive.leftFront.setPower(leftFrontPower);
+        drive.rightFront.setPower(rightFrontPower);
+        drive.leftRear.setPower(leftBackPower);
+        drive.rightRear.setPower(rightBackPower);
     }
 
     public class aprilThread implements Runnable {

@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.drive.TeleOp;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.github.i_n_t_robotics.zhonyas.navx.AHRS;
@@ -85,6 +86,10 @@ public class SuperQualsTeleOp extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         Telemetry telemetry = new MultipleTelemetry(this.telemetry, dashboard.getTelemetry());
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.fieldOverlay().drawImage("/images/centerstage.jpg", 0, 0, 144, 144);
+        //packet.fieldOverlay().drawImage("/dash/powerplay.png", 0, 0, 144, 144);
+        dashboard.sendTelemetryPacket(packet);
         initAprilTag();
         drive = new SampleMecanumDrive(hardwareMap);
         rights = hardwareMap.get(Servo.class, "rA");

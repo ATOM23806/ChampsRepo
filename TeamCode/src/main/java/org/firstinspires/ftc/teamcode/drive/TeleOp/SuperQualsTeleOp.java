@@ -296,7 +296,7 @@ public class SuperQualsTeleOp extends LinearOpMode {
         drive.rightRear.setPower(rightBackPower);
     }
 
-    private void    setManualExposure(int exposureMS, int gain) {
+    private void setManualExposure(int exposureMS, int gain) {
         // Wait for the camera to be open, then use the controls
 
         if (visionPortal == null) {
@@ -370,7 +370,7 @@ public class SuperQualsTeleOp extends LinearOpMode {
         }
     }
 
-    public Pose2d cameraToRobotPose(AprilTagDetection detection) {
+    public static Pose2d cameraToRobotPose(AprilTagDetection detection) {
         double tagX = detection.ftcPose.x;
         double tagY = detection.ftcPose.y;
 
@@ -414,7 +414,7 @@ public class SuperQualsTeleOp extends LinearOpMode {
         return new Vector2d(absX, absY);
     }
 
-    private Pose2d getFCPositionTag(AprilTagDetection detection, Pose2d robotPose) {
+    public static Pose2d getFCPositionTag(AprilTagDetection detection, Pose2d robotPose) {
         double x = robotPose.getX();
         double y = robotPose.getY();
         // invert heading to correct properly

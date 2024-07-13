@@ -6,6 +6,8 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.github.i_n_t_robotics.zhonyas.navx.AHRS;
+import com.qualcomm.hardware.kauailabs.NavxMicroNavigationSensor;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -50,10 +52,13 @@ public class RedFarSide extends LinearOpMode {
     public volatile AprilTagDetection desiredTag;
     private TagDetectionThread detectionThread;
 
+    public AHRS navx;
+
     private boolean USE_WEBCAM = true;
     public volatile boolean targetFound;
     public static int DESIRED_TAG_ID = 4;
-    private static double DESIRED_DISTANCE = 6;
+    private static double DESIRED_DISTANCE = 8;
+    private double fcX, fcY;
 
     public static double SPEED_GAIN = 0.023;
     public static double STRAFE_GAIN = 0.015;
@@ -66,6 +71,8 @@ public class RedFarSide extends LinearOpMode {
     public double driv, strafe, turn;
 
     public volatile Pose2d fcPoseTag;
+    public double offset;
+
 
     FtcDashboard dashboard = FtcDashboard.getInstance();
 
@@ -104,6 +111,11 @@ public class RedFarSide extends LinearOpMode {
         rightlift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         rightlift.setDirection(DcMotorSimple.Direction.REVERSE);
+        navx =  AHRS.getInstance(hardwareMap.get(NavxMicroNavigationSensor.class, "navx"),
+                AHRS.DeviceDataType.kProcessedData);
+
+        offset = Math.toRadians(navx.getFusedHeading());
+
 
         driv = 0;        // Desired forward power/speed (-1 to +1)
         strafe = 0;        // Desired strafe power/speed (-1 to +1)
@@ -187,11 +199,11 @@ public class RedFarSide extends LinearOpMode {
                         SampleMecanumDrive.getAccelerationConstraint(40))
 
                 .lineToConstantHeading(new Vector2d(30.89, -14.5))
-                // .addDisplacementMarker( () -> {
+                .addDisplacementMarker( () -> {
 
-                //rights.setPosition(0.47);
-                //lefts.setPosition(0.47);
-                //})
+                rights.setPosition(0.47);
+                lefts.setPosition(0.47);
+                })
                 .lineTo(new Vector2d(24, -22))
                 .turn(Math.toRadians(-20))
                 .build();
@@ -363,8 +375,8 @@ public class RedFarSide extends LinearOpMode {
                 Pose2d currentPose = SuperQualsTeleOp.cameraToRobotPose(desiredTag);
 
                 Pose2d fcPoseTag = SuperQualsTeleOp.getFCPositionTag(desiredTag, currentPose);
-                supatelemetry.addData("tagx:", fcPoseTag.getX());
-                supatelemetry.addData("tagy:", fcPoseTag.getY());
+                fcX = fcPoseTag.getX();
+                fcY = fcPoseTag.getY();
 
 
                 // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
@@ -386,7 +398,6 @@ public class RedFarSide extends LinearOpMode {
                 strafe = 0;
             }
             telemetry.update();
-            drive.update();
             // Apply desired axes motions to the drivetrain.
             moveRobot(driv, strafe, turn);
         }
@@ -394,10 +405,13 @@ public class RedFarSide extends LinearOpMode {
 
 
 
-
-            TrajectorySequence afterTag = drive.trajectorySequenceBuilder(drive.getPoseEstimate()).forward(5,
-                    SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                    SampleMecanumDrive.getAccelerationConstraint(40)).build();
+        drive.setPoseEstimate(new Pose2d(fcX, fcY, getCorrectedHeading(Math.toRadians(navx.getFusedHeading()))));
+            TrajectorySequence afterTag = drive.trajectorySequenceBuilder(
+                    drive.getPoseEstimate())
+                    .back(10,
+                    SampleMecanumDrive.getVelocityConstraint(20, 30, 9.335),
+                    SampleMecanumDrive.getAccelerationConstraint(30))
+                    .build();
 
         drive.followTrajectorySequence(afterTag);
 
@@ -410,21 +424,16 @@ public class RedFarSide extends LinearOpMode {
             System.out.println("Oops fucky wucky");
         };
 
-        TrajectorySequence fin = drive.trajectorySequenceBuilder(finaltraj.end())
+        TrajectorySequence fin = drive.trajectorySequenceBuilder(afterTag.end())
                 .forward(10)
-                .addDisplacementMarker(() -> {
-                    rights.setPosition(0.0);
-                    lefts.setPosition(0.0);
-                })
-
-                .strafeRight(10)
-                .splineToConstantHeading(new Vector2d(55, -13), Math.toRadians(-43.15),
-                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
-                .addDisplacementMarker(() -> {
-                    release.setPosition(0);
-                })
+                .strafeRight(15)
+                .back(7)
                 .build();
+
+        rights.setPosition(0.0);
+        lefts.setPosition(0.0);
+        release.setPosition(0);
+
 
         drive.followTrajectorySequence(fin);
 
@@ -532,6 +541,16 @@ public class RedFarSide extends LinearOpMode {
         drive.rightFront.setPower(rightFrontPower);
         drive.leftRear.setPower(leftBackPower);
         drive.rightRear.setPower(rightBackPower);
+    }
+
+    public double getCorrectedHeading(double currentHeading) {
+        double correctedHeading = offset - currentHeading;
+        if (correctedHeading < 0) {
+            correctedHeading += 2 * Math.PI;
+        } else if (correctedHeading >= 2 * Math.PI) {
+            correctedHeading -= 2 * Math.PI;
+        }
+        return correctedHeading;
     }
 
     public class TagDetectionThread extends Thread {

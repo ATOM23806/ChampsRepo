@@ -333,7 +333,7 @@ public class SuperQualsTeleOp extends LinearOpMode {
         }
     }
 
-    private double getCorrectedHeading(double currentHeading) {
+    public double getCorrectedHeading(double currentHeading) {
         double correctedHeading = offset - currentHeading;
         if (correctedHeading < 0) {
             correctedHeading += 2 * Math.PI;

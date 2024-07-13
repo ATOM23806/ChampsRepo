@@ -54,9 +54,9 @@ public class SuperQualsTeleOp extends LinearOpMode {
     private final Vector2d cameraOffset = new Vector2d(0, 0);
 
 
-    public static double SPEED_GAIN = 0.03;
+    public static double SPEED_GAIN = 0.023;
     public static double STRAFE_GAIN = 0.015;
-    public static double TURN_GAIN = 0.04;
+    public static double TURN_GAIN = 0.014;
     final double MAX_AUTO_SPEED = 0.5;   //  Clip the approach speed to this max value (adjust for your robot)
     final double MAX_AUTO_STRAFE= 0.5;   //  Clip the approach speed to this max value (adjust for your robot)
     final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)
@@ -444,7 +444,7 @@ public class SuperQualsTeleOp extends LinearOpMode {
         return  new Pose2d(absX, absY, botheading);
     }
 
-    public static AprilTagLibrary getCenterStageTagLibrary() { // updated custom field coords from michael
+    public static AprilTagLibrary getCenterStageTagLibrary() { // updated custom field coords from DARIUS!!!!!!!!!!!!!!
         return new AprilTagLibrary.Builder()
                 .addTag(1, "BlueAllianceLeft",
                         2, new VectorF(61.75f, 41.41f, 4f), DistanceUnit.INCH,
@@ -464,17 +464,18 @@ public class SuperQualsTeleOp extends LinearOpMode {
                 .addTag(6, "RedAllianceRight",
                         2, new VectorF(61.75f, -41.41f, 4f), DistanceUnit.INCH,
                         new Quaternion(0.3536f, -0.6124f, 0.6124f, -0.3536f, 0))
+                //Wall tags modifies to be on the inside of our field
                 .addTag(7, "RedAudienceWallLarge",
-                        5, new VectorF(-70.25f, -40.625f, 5.5f), DistanceUnit.INCH,
+                        5, new VectorF(-70.1f, -40.625f, 5.5f), DistanceUnit.INCH,
                         new Quaternion(0.5f, -0.5f, -0.5f, 0.5f, 0))
                 .addTag(8, "RedAudienceWallSmall",
-                        2, new VectorF(-70.25f, -35.125f, 4f), DistanceUnit.INCH,
+                        2, new VectorF(-70.1f, -35.125f, 4f), DistanceUnit.INCH,
                         new Quaternion(0.5f, -0.5f, -0.5f, 0.5f, 0))
                 .addTag(9, "BlueAudienceWallSmall",
-                        2, new VectorF(-70.25f, 35.125f, 4f), DistanceUnit.INCH,
+                        2, new VectorF(-70.1f, 35.125f, 4f), DistanceUnit.INCH,
                         new Quaternion(0.5f, -0.5f, -0.5f, 0.5f, 0))
                 .addTag(10, "BlueAudienceWallLarge",
-                        5, new VectorF(-70.25f, 40.625f, 5.5f), DistanceUnit.INCH,
+                        5, new VectorF(-70.1f, 40.625f, 5.5f), DistanceUnit.INCH,
                         new Quaternion(0.5f, -0.5f, -0.5f, 0.5f, 0))
                 .build();
     }

@@ -46,7 +46,7 @@ public class TagAuto extends LinearOpMode {
 
     private VisionPortal visionPortal;
     public AprilTagProcessor aprilTag;
-    private WebcamName colorCam, aprilCam;
+    private WebcamName aprilCam;
     public volatile AprilTagDetection desiredTag;
     private boolean USE_WEBCAM = true;
     public volatile boolean targetFound;
@@ -58,9 +58,9 @@ public class TagAuto extends LinearOpMode {
     public static double STRAFE_GAIN = 0.015;
     public static double TURN_GAIN = 0.014;
 
-    public static double MAX_AUTO_SPEED = 0.5;
-    public static double MAX_AUTO_STRAFE = 0.5;
-    public static double MAX_AUTO_TURN = 0.3;
+    public static double MAX_AUTO_SPEED = 0.25;
+    public static double MAX_AUTO_STRAFE = 0.25;
+    public static double MAX_AUTO_TURN = 0.15;
 
     public double driv, strafe, turn;
 
@@ -68,8 +68,6 @@ public class TagAuto extends LinearOpMode {
 
     FtcDashboard dashboard = FtcDashboard.getInstance();
 
-    private TramRed redTram;
-    private RevColorSensorV3 colorSensorV3;
     private Servo release;
     private DcMotor leftlift, rightlift;
     private boolean track = false;
@@ -86,7 +84,7 @@ public class TagAuto extends LinearOpMode {
         //packet.fieldOverlay().drawImage("/dash/powerplay.png", 0, 0, 144, 144);
         dashboard.sendTelemetryPacket(packet);
         drive = new SampleMecanumDrive(hardwareMap);
-        startingPose = new Pose2d(-34.71, -62.5, Math.toRadians(90));
+        startingPose = new Pose2d(10.1, -59.7, Math.toRadians(90));
         drive.setPoseEstimate(startingPose);
         rights = hardwareMap.get(Servo.class, "rA");
         lefts = hardwareMap.get(Servo.class, "lA");
@@ -108,23 +106,9 @@ public class TagAuto extends LinearOpMode {
         strafe = 0;        // Desired strafe power/speed (-1 to +1)
         turn = 0;        // Desired turning power/speed (-1 to +1)
 
-        // main = new SuperQualsTeleOp();
-
-        Scalar lower = new Scalar(150, 100, 100);
-        Scalar upper = new Scalar(180, 255, 255);
-
-        double minArea = 100;
-
-        redTram = new TramRed(
-                lower,
-                upper,
-                () -> minArea,
-                () -> 410,
-                () -> 426
-        );
 
         initAprilTag();
-        visionPortal.setProcessorEnabled(redTram, true);
+
 
        /* if (USE_WEBCAM)
             setManualExposure(6, 250);  // Use low exposure time to reduce motion blur */
@@ -133,67 +117,44 @@ public class TagAuto extends LinearOpMode {
         release.setPosition(0);
         rights.setPosition(0.05);
         lefts.setPosition(0.05);
+        detectionThread = new TagDetectionThread(aprilTag);
+        detectionThread.start();
 
-        while (!isStarted()) {
-            visionPortal.setActiveCamera(colorCam);
-            supatelemetry.addData("Currently Recorded Position", redTram.getRecordedPropPosition());
-            supatelemetry.addData("Camera State", visionPortal.getCameraState());
-            supatelemetry.addData("Currently Detected Mass Center", "x: " + redTram.getLargestContourX() + ", y: " + redTram.getLargestContourY());
-            supatelemetry.addData("Currently Detected Mass Area", redTram.getLargestContourArea());
-            supatelemetry.addData("Fuck", redTram.getHeight());
-            supatelemetry.update();
-        }
 
         waitForStart();
-        if (isStopRequested()) return;
 
         targetFound = false;
         desiredTag = null;
 
 
-        visionPortal.setProcessorEnabled(redTram, false);
-        visionPortal.setProcessorEnabled(aprilTag, true);
-        visionPortal.setActiveCamera(aprilCam);
-        detectionThread = new TagDetectionThread(aprilTag);
-        detectionThread.start();
-
-        TramRed.PropPositions recordedPropPosition = redTram.getRecordedPropPosition();
-
-        if (recordedPropPosition == TramRed.PropPositions.UNFOUND) {
-            recordedPropPosition = TramRed.PropPositions.MIDDLE;
-        }
 
 
-        TrajectorySequence trajleft = drive.trajectorySequenceBuilder(startingPose)
-                .strafeLeft(3)
-                .lineTo(new Vector2d(-40.34, -45.76))
-                .splineToSplineHeading(new Pose2d(-47, -17.98, Math.toRadians(270.00)), Math.toRadians(107.10))
 
-                .forward(3.5)
+        TrajectorySequence trajleft = drive.trajectorySequenceBuilder(new Pose2d(11.3, -59.7, Math.toRadians(90)))
+                .splineToSplineHeading(new Pose2d(10.00, -30, Math.toRadians(180.00)), Math.toRadians(201.80))
+                .forward(7)
+                .back(4)
                 .addDisplacementMarker(() -> {
                     intake.setPower(0.3);
                 })
                 .back(1)
-                .waitSeconds(.6)
+                .waitSeconds(.3)
                 .addDisplacementMarker(() -> {
-
+                    intake.setPower(-.3);
+                })
+                .forward(1)
+                .waitSeconds(.2)
+                .back(4)
+                .addDisplacementMarker(() -> {
                     intake.setPower(0);
-
+                })
+                .lineToConstantHeading(new Vector2d(23.67, -31.99))
+                .addDisplacementMarker(() -> {
+                    System.out.println("Stopping Intake!");
+                    rights.setPosition(0.47);
+                    lefts.setPosition(0.47);
                 })
 
-                .back(3.5)
-                .splineToSplineHeading(new Pose2d(-33.81, -13, Math.toRadians(180.00)), Math.toRadians(0.00),
-                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
-
-                .lineToConstantHeading(new Vector2d(30.89, -14.5))
-                 .addDisplacementMarker( () -> {
-
-                rights.setPosition(0.47);
-                lefts.setPosition(0.47);
-                })
-                .lineTo(new Vector2d(24, -22))
-                .turn(Math.toRadians(-20))
                 .build();
 
 
@@ -280,45 +241,15 @@ public class TagAuto extends LinearOpMode {
                         SampleMecanumDrive.getAccelerationConstraint(40))
                 .build();
 
-        TrajectorySequence finaltraj = null;
+        TrajectorySequence finaltraj = trajleft;
 
-        switch (recordedPropPosition) {
-            case LEFT:
-                finaltraj = trajleft;
-                break;
-            case MIDDLE:
-                finaltraj = trajCenter;
-                break;
-            case RIGHT:
-                finaltraj = trajright;
-        }
-
-        drive.followTrajectorySequence(finaltraj);
+        //drive.followTrajectorySequence(finaltraj);
 
         while (opModeIsActive()) {
 
             desiredTag = detectionThread.getLatestDetection();
 
-            /*(targetFound = false;
-            desiredTag = null;
 
-            // Step through the list of detected tags and look for a matching tag
-            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-            for (AprilTagDetection detection : currentDetections) {
-                // Look to see if we have size info on this tag.
-                if (detection.metadata != null) {
-                    //  Check to see if we want to track towards this tag.
-                    if ((DESIRED_TAG_ID < 0) || (detection.id == DESIRED_TAG_ID)) {
-                        // Yes, we want to use this tag.
-                        targetFound = true;
-                        desiredTag = detection;
-                        break;  // don't look any further.
-                    } else {
-                        // This tag is in the library, but we do not want to track it right now.
-                        telemetry.addData("Skipping", "Tag ID %d is not desired", detection.id);
-                    }
-                }
-            } */
 
             // Tell the driver what we see, and what to do.
             if (desiredTag != null) {
@@ -332,7 +263,7 @@ public class TagAuto extends LinearOpMode {
                 double headingError = desiredTag.ftcPose.bearing;
                 double yawError = desiredTag.ftcPose.yaw;
 
-                if (rangeError < 1.5) break;
+                //if (rangeError < 1.5) break;
 
                 // Use the speed and turn "gains" to calculate how we want the robot to move.
                 driv = -Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
@@ -405,16 +336,14 @@ public class TagAuto extends LinearOpMode {
         // Note: Decimation can be changed on-the-fly to adapt during a match.
         aprilTag.setDecimation(2);
 
-        colorCam = hardwareMap.get(WebcamName.class, "Webcam 1");
         aprilCam = hardwareMap.get(WebcamName.class, "Webcam 2");
-        CameraName switchableCamera = ClassFactory.getInstance()
-                .getCameraManager().nameForSwitchableCamera(colorCam, aprilCam);
+        ;
 
         // Create the vision portal by using a builder.
         if (USE_WEBCAM) {
             visionPortal = new VisionPortal.Builder()
-                    .setCamera(switchableCamera)
-                    .addProcessors(aprilTag, redTram)
+                    .setCamera(aprilCam)
+                    .addProcessor(aprilTag)
                     .build();
         } else {
             visionPortal = new VisionPortal.Builder()

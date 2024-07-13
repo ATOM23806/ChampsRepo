@@ -37,8 +37,8 @@ import org.opencv.core.Scalar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-@Autonomous (group = "Red Autos", name = "Red Side Far")
-public class RedFarSide extends LinearOpMode {
+@Autonomous (group = "Red Autos", name = "Tagggg")
+public class TagAuto extends LinearOpMode {
 
     private Servo rights, lefts;
     private CRServo intake;
@@ -50,6 +50,7 @@ public class RedFarSide extends LinearOpMode {
     public volatile AprilTagDetection desiredTag;
     private boolean USE_WEBCAM = true;
     public volatile boolean targetFound;
+    private TagDetectionThread detectionThread;
     public static int DESIRED_TAG_ID = 4;
     private static double DESIRED_DISTANCE = 6;
 
@@ -57,9 +58,9 @@ public class RedFarSide extends LinearOpMode {
     public static double STRAFE_GAIN = 0.015;
     public static double TURN_GAIN = 0.014;
 
-    public static double MAX_AUTO_SPEED = 0.25;
-    public static double MAX_AUTO_STRAFE = 0.25;
-    public static double MAX_AUTO_TURN = 0.15;
+    public static double MAX_AUTO_SPEED = 0.5;
+    public static double MAX_AUTO_STRAFE = 0.5;
+    public static double MAX_AUTO_TURN = 0.3;
 
     public double driv, strafe, turn;
 
@@ -153,8 +154,8 @@ public class RedFarSide extends LinearOpMode {
         visionPortal.setProcessorEnabled(redTram, false);
         visionPortal.setProcessorEnabled(aprilTag, true);
         visionPortal.setActiveCamera(aprilCam);
-        new Thread(new aprilThread()).start();
-
+        detectionThread = new TagDetectionThread(aprilTag);
+        detectionThread.start();
 
         TramRed.PropPositions recordedPropPosition = redTram.getRecordedPropPosition();
 
@@ -186,11 +187,11 @@ public class RedFarSide extends LinearOpMode {
                         SampleMecanumDrive.getAccelerationConstraint(40))
 
                 .lineToConstantHeading(new Vector2d(30.89, -14.5))
-                // .addDisplacementMarker( () -> {
+                 .addDisplacementMarker( () -> {
 
-                //rights.setPosition(0.47);
-                //lefts.setPosition(0.47);
-                //})
+                rights.setPosition(0.47);
+                lefts.setPosition(0.47);
+                })
                 .lineTo(new Vector2d(24, -22))
                 .turn(Math.toRadians(-20))
                 .build();
@@ -296,6 +297,8 @@ public class RedFarSide extends LinearOpMode {
 
         while (opModeIsActive()) {
 
+            desiredTag = detectionThread.getLatestDetection();
+
             /*(targetFound = false;
             desiredTag = null;
 
@@ -318,7 +321,7 @@ public class RedFarSide extends LinearOpMode {
             } */
 
             // Tell the driver what we see, and what to do.
-            if (targetFound) {
+            if (desiredTag != null) {
                 telemetry.addData("Found", "ID %d (%s)", desiredTag.id, desiredTag.metadata.name);
                 telemetry.addData("Range", "%5.1f inches", desiredTag.ftcPose.range);
                 telemetry.addData("Bearing", "%3.0f degrees", desiredTag.ftcPose.bearing);
@@ -328,6 +331,8 @@ public class RedFarSide extends LinearOpMode {
                 double rangeError = (desiredTag.ftcPose.range - DESIRED_DISTANCE);
                 double headingError = desiredTag.ftcPose.bearing;
                 double yawError = desiredTag.ftcPose.yaw;
+
+                if (rangeError < 1.5) break;
 
                 // Use the speed and turn "gains" to calculate how we want the robot to move.
                 driv = -Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
@@ -341,9 +346,9 @@ public class RedFarSide extends LinearOpMode {
         }
 
 
-            TrajectorySequence afterTag = drive.trajectorySequenceBuilder(drive.getPoseEstimate()).back(5,
-                    SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                    SampleMecanumDrive.getAccelerationConstraint(40)).build();
+        TrajectorySequence afterTag = drive.trajectorySequenceBuilder(drive.getPoseEstimate()).back(5,
+                SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
+                SampleMecanumDrive.getAccelerationConstraint(40)).build();
 
 
 
@@ -479,55 +484,50 @@ public class RedFarSide extends LinearOpMode {
         drive.rightRear.setPower(rightBackPower);
     }
 
-    public class aprilThread implements Runnable {
+    public class TagDetectionThread extends Thread {
+        private AprilTagProcessor aprilTag;
+        private volatile AprilTagDetection latestDetection;
+
+        public TagDetectionThread(AprilTagProcessor aprilTag) {
+            this.aprilTag = aprilTag;
+            this.latestDetection = null;
+        }
+
+
         @Override
         public void run() {
-            while (!isStopRequested()) {
-                synchronized (this) {
+            while (!isInterrupted()) {
+                // Update AprilTag detections
+                List<AprilTagDetection> detections = aprilTag.getDetections();
 
-                targetFound = false;
-            desiredTag = null;
+                // Find the desired tag or update based on strategy
+                AprilTagDetection desiredTag = findDesiredTag(detections);
 
-                    List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-                    for (AprilTagDetection detection : currentDetections) {
-                        // Look to see if we have size info on this tag.
-                        if (detection.metadata != null) {
-                            //  Check to see if we want to track towards this tag.
-                            if ((DESIRED_TAG_ID < 0) || (detection.id == DESIRED_TAG_ID)) {
-                                // Yes, we want to use this tag.
-                                targetFound = true;
-                                desiredTag = detection;
-                                break;  // don't look any further.
-                            } else {
-                                // This tag is in the library, but we do not want to track it right now.
-                                telemetry.addData("Skipping", "Tag ID %d is not desired", detection.id);
-                            }
-                        } else {
-                            // This tag is NOT in the library, so we don't have enough information to track to it.
-                            telemetry.addData("Unknown", "Tag ID %d is not in TagLibrary", detection.id);
-                        }
-                    }
+                // Update the latest detection
+                latestDetection = desiredTag;
 
-                    if (targetFound) {
-                        // telemetry.addData("\n>", "HOLD Left-Bumper to Drive to Target\n");
-                        supatelemetry.addData("Found", "ID %d (%s)", desiredTag.id, desiredTag.metadata.name);
-                        supatelemetry.addData("Range", "%5.1f inches", desiredTag.ftcPose.range);
-                        // telemetry.addData("Bearing", "%3.0f degrees", desiredTag.ftcPose.bearing);
-                        supatelemetry.addData("Yaw", "%3.0f degrees", desiredTag.ftcPose.yaw);
-
-                        Pose2d currentPose = SuperQualsTeleOp.cameraToRobotPose(desiredTag);
-                        fcPoseTag = SuperQualsTeleOp.getFCPositionTag(desiredTag, currentPose);
-                    }
-                    supatelemetry.update();
-                    try {
-
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
+                // Add a small delay to avoid overloading the CPU
+                try {
+                    Thread.sleep(20);
+                } catch (InterruptedException e) {
+                    interrupt();
                 }
-
             }
+        }
+
+        public AprilTagDetection getLatestDetection() {
+            return latestDetection;
+        }
+
+        private AprilTagDetection findDesiredTag(List<AprilTagDetection> detections) {
+            // Implement your logic to find the desired tag
+            // Example: Find by ID or other criteria
+            for (AprilTagDetection detection : detections) {
+                if (detection.metadata != null && detection.id == DESIRED_TAG_ID) {
+                    return detection;
+                }
+            }
+            return null;
         }
     }
 }

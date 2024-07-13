@@ -344,62 +344,7 @@ public class RedFarSide extends LinearOpMode {
 
         while (opModeIsActive())
         {
-            targetFound = false;
-            desiredTag  = null;
-
-            // Step through the list of detected tags and look for a matching tag
-            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-            for (AprilTagDetection detection : currentDetections) {
-                // Look to see if we have size info on this tag.
-                if (detection.metadata != null) {
-                    //  Check to see if we want to track towards this tag.
-                    if ((DESIRED_TAG_ID < 0) || (detection.id == DESIRED_TAG_ID)) {
-                        // Yes, we want to use this tag.
-                        targetFound = true;
-                        desiredTag = detection;
-                        break;  // don't look any further.
-                    } else {
-                        // This tag is in the library, but we do not want to track it right now.
-                        telemetry.addData("Skipping", "Tag ID %d is not desired", detection.id);
-                    }
-                }
-            }
-
-            // Tell the driver what we see, and what to do.
-            if (targetFound) {
-                telemetry.addData("Found", "ID %d (%s)", desiredTag.id, desiredTag.metadata.name);
-                telemetry.addData("Range",  "%5.1f inches", desiredTag.ftcPose.range);
-                telemetry.addData("Bearing","%3.0f degrees", desiredTag.ftcPose.bearing);
-                telemetry.addData("Yaw","%3.0f degrees", desiredTag.ftcPose.yaw);
-
-                Pose2d currentPose = SuperQualsTeleOp.cameraToRobotPose(desiredTag);
-
-                Pose2d fcPoseTag = SuperQualsTeleOp.getFCPositionTag(desiredTag, currentPose);
-                fcX = fcPoseTag.getX();
-                fcY = fcPoseTag.getY();
-
-
-                // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
-                double  rangeError      = (desiredTag.ftcPose.range - DESIRED_DISTANCE);
-                double  headingError    = desiredTag.ftcPose.bearing;
-                double  yawError        = desiredTag.ftcPose.yaw;
-
-                if (rangeError < 2) break;
-
-                // Use the speed and turn "gains" to calculate how we want the robot to move.
-                driv  = -Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
-                turn   = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
-                strafe = -Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
-
-
-            } else if (!targetFound) {
-                driv = 0;
-                turn = 0;
-                strafe = 0;
-            }
-            telemetry.update();
-            // Apply desired axes motions to the drivetrain.
-            moveRobot(driv, strafe, turn);
+            alignLogic();
         }
 
 
@@ -423,6 +368,36 @@ public class RedFarSide extends LinearOpMode {
         } catch (InterruptedException e){
             System.out.println("Oops fucky wucky");
         };
+
+        TrajectorySequence firstStack = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                .splineTo(new Vector2d(32.05, -12.92), Math.toRadians(170.31))
+                .splineToSplineHeading(new Pose2d(-6.91, -12.36, Math.toRadians(0.00)), Math.toRadians(180.00))
+                .splineToConstantHeading(new Vector2d(-35.27, -22.00), Math.toRadians(-83.29))
+                .splineToConstantHeading(new Vector2d(-42.81, -40.43), Math.toRadians(200.35))
+                .build();
+
+        while (opModeIsActive()) {
+            DESIRED_TAG_ID = 8;
+            alignLogic();
+        }
+
+        drive.setPoseEstimate(new Pose2d(fcX, fcY, getCorrectedHeading(Math.toRadians(navx.getFusedHeading()))));
+        TrajectorySequence scoreFirstStack = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                .turn(Math.toRadians(180))
+                .forward(5)
+                .back(3)
+                .forward(3)
+                .lineToConstantHeading(new Vector2d(-40.85, -34.99))
+                .splineToConstantHeading(new Vector2d(-30.10, -59.99), Math.toRadians(-12.53))
+                .lineToConstantHeading(new Vector2d(26.61, -60.41))
+                .splineToConstantHeading(new Vector2d(35.69, -43.37), Math.toRadians(61.95))
+                .build();
+
+        while (opModeIsActive()) {
+            DESIRED_TAG_ID = 6;
+            alignLogic();
+        }
+
 
         TrajectorySequence fin = drive.trajectorySequenceBuilder(afterTag.end())
                 .forward(10)
@@ -515,6 +490,65 @@ public class RedFarSide extends LinearOpMode {
             gainControl.setGain(gain);
             sleep(20);
         }
+    }
+
+    private void alignLogic() {
+        targetFound = false;
+        desiredTag  = null;
+
+        // Step through the list of detected tags and look for a matching tag
+        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+        for (AprilTagDetection detection : currentDetections) {
+            // Look to see if we have size info on this tag.
+            if (detection.metadata != null) {
+                //  Check to see if we want to track towards this tag.
+                if ((DESIRED_TAG_ID < 0) || (detection.id == DESIRED_TAG_ID)) {
+                    // Yes, we want to use this tag.
+                    targetFound = true;
+                    desiredTag = detection;
+                    break;  // don't look any further.
+                } else {
+                    // This tag is in the library, but we do not want to track it right now.
+                    telemetry.addData("Skipping", "Tag ID %d is not desired", detection.id);
+                }
+            }
+        }
+
+        // Tell the driver what we see, and what to do.
+        if (targetFound) {
+            telemetry.addData("Found", "ID %d (%s)", desiredTag.id, desiredTag.metadata.name);
+            telemetry.addData("Range",  "%5.1f inches", desiredTag.ftcPose.range);
+            telemetry.addData("Bearing","%3.0f degrees", desiredTag.ftcPose.bearing);
+            telemetry.addData("Yaw","%3.0f degrees", desiredTag.ftcPose.yaw);
+
+            Pose2d currentPose = SuperQualsTeleOp.cameraToRobotPose(desiredTag);
+
+            Pose2d fcPoseTag = SuperQualsTeleOp.getFCPositionTag(desiredTag, currentPose);
+            fcX = fcPoseTag.getX();
+            fcY = fcPoseTag.getY();
+
+
+            // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
+            double  rangeError      = (desiredTag.ftcPose.range - DESIRED_DISTANCE);
+            double  headingError    = desiredTag.ftcPose.bearing;
+            double  yawError        = desiredTag.ftcPose.yaw;
+
+            if (rangeError < 2) break;
+
+            // Use the speed and turn "gains" to calculate how we want the robot to move.
+            driv  = -Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
+            turn   = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
+            strafe = -Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
+
+
+        } else if (!targetFound) {
+            driv = 0;
+            turn = 0;
+            strafe = 0;
+        }
+        telemetry.update();
+        // Apply desired axes motions to the drivetrain.
+        moveRobot(driv, strafe, turn);
     }
 
     public void moveRobot(double x, double y, double yaw) {

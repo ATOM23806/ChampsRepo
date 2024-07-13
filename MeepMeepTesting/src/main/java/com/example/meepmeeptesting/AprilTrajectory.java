@@ -15,27 +15,13 @@ public class AprilTrajectory {
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15.5)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(-34.71, -62.5, Math.toRadians(90)))
-                                .strafeLeft(3)
-                                .lineTo(new Vector2d(-40.34, -45.76))
-                                .splineToSplineHeading(new Pose2d(-47, -17.98, Math.toRadians(270.00)), Math.toRadians(107.10))
+                        drive.trajectorySequenceBuilder(new Pose2d(-59, -34, Math.toRadians(180)))
+                                .lineToConstantHeading(new Vector2d(-40.85, -34.99))
+                                .splineToConstantHeading(new Vector2d(-30.10, -59.99), Math.toRadians(-12.53))
+                                .lineToConstantHeading(new Vector2d(26.61, -60.41))
+                                .splineToConstantHeading(new Vector2d(35.69, -43.37), Math.toRadians(61.95))
 
-                                .forward(3.5)
 
-                                .back(1)
-                                .waitSeconds(.6)
-
-                                .back(3.5)
-                                .splineToSplineHeading(new Pose2d(-33.81, -13, Math.toRadians(180.00)), Math.toRadians(0.00),
-                                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                                        SampleMecanumDrive.getAccelerationConstraint(40))
-
-                                .lineToConstantHeading(new Vector2d(30.89, -14.5))
-                                .addDisplacementMarker( () -> {
-
-                                })
-                                .lineTo(new Vector2d(24, -22))
-                                .turn(Math.toRadians(-10))
                                 .build()
 
 

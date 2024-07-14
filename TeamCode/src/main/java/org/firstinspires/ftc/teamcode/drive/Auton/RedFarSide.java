@@ -247,49 +247,29 @@ public class RedFarSide extends LinearOpMode {
 
 
         TrajectorySequence trajright = drive.trajectorySequenceBuilder(startingPose)
-                .forward(3)
                 .strafeLeft(3)
-                .splineToSplineHeading(new Pose2d(-33.78, -34.5, Math.toRadians(0.00)), Math.toRadians(-17.11),
-                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
-                .forward(4)
-                .back(5)
+                .splineToSplineHeading(new Pose2d(-32.58, -35.16, Math.toRadians(0.00)), Math.toRadians(55.68))
                 .addDisplacementMarker(() -> {
                     intake.setPower(0.3);
                 })
                 .back(3)
-                .waitSeconds(.4)
                 .addDisplacementMarker(() -> {
-                    intake.setPower(-.2);
+                    intake.setPower(-0.3);
                 })
-                .forward(1)
-                .waitSeconds(.2)
-                .back(6)
+                .splineToLinearHeading(new Pose2d(-40.97, -19.09, Math.toRadians(180.00)), Math.toRadians(101.31))
                 .addDisplacementMarker(() -> {
                     intake.setPower(0);
                 })
-                .lineToConstantHeading(new Vector2d(-35.75, -10.20))
-                .lineToSplineHeading(new Pose2d(27.69, -10.60, Math.toRadians(180.00)))
-                //.turn(Math.toRadians(-45))
-                .lineTo(new Vector2d(23.6, -28.4))
-                .addDisplacementMarker(() -> {
-                    System.out.println("Stopping Intake!");
+                .splineToLinearHeading(new Pose2d(-37.19, -11.54, Math.toRadians(180.00)), Math.toRadians(26.04))
+                .splineToConstantHeading(new Vector2d(-14.92, -11.14), Math.toRadians(3.01))
+                .splineToConstantHeading(new Vector2d(30.83, -11.34), Math.toRadians(-4.27))
+                .addDisplacementMarker( () -> {
+
                     rights.setPosition(0.47);
                     lefts.setPosition(0.47);
                 })
-                .addDisplacementMarker(() -> {
-                    synchronized (this) {
-                        drive.setPoseEstimate(new Pose2d(fcPoseTag.getX(), fcPoseTag.getY(), drive.getPoseEstimate().getHeading()));
-                    }
-                })
-                .waitSeconds(5)
-                .lineToConstantHeading(new Vector2d(49, -40),
-                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
-
-                .back(5,
-                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                .splineToConstantHeading(new Vector2d(36.40, -27.65), Math.toRadians(259.99))
+                .splineToLinearHeading(new Pose2d(40.40, -41.97, Math.toRadians(180.00)), Math.toRadians(-74.59))
                 .build();
 
         TrajectorySequence finaltraj = null;
@@ -297,12 +277,14 @@ public class RedFarSide extends LinearOpMode {
         switch (recordedPropPosition) {
             case LEFT:
                 finaltraj = trajleft;
+                DESIRED_TAG_ID = 4;
                 break;
             case MIDDLE:
                 finaltraj = trajCenter;
                 break;
             case RIGHT:
                 finaltraj = trajright;
+                DESIRED_TAG_ID = 6;
         }
 
         drive.followTrajectorySequence(finaltraj);
@@ -342,6 +324,7 @@ public class RedFarSide extends LinearOpMode {
             moveRobot(driv, strafe, turn);
         } */
 
+
         alignLogic();
 
         drive.setPoseEstimate(new Pose2d(fcX, fcY, getCorrectedHeading(Math.toRadians(navx.getFusedHeading()))));
@@ -365,9 +348,14 @@ public class RedFarSide extends LinearOpMode {
 
         TrajectorySequence firstStack = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                 .splineTo(new Vector2d(32.05, -12.92), Math.toRadians(170.31))
-                .splineToSplineHeading(new Pose2d(-6.91, -12.36, Math.toRadians(0.00)), Math.toRadians(180.00))
+                .splineTo(new Vector2d(-6.91, -12.36), Math.toRadians(180.00))
                 .splineToConstantHeading(new Vector2d(-35.27, -22.00), Math.toRadians(-83.29))
-                .splineToConstantHeading(new Vector2d(-42.81, -40.43), Math.toRadians(200.35))
+                .addDisplacementMarker(() -> {
+                    intake.setPower(1);
+                })
+                .splineToConstantHeading(new Vector2d(-58.00, -35.00), Math.toRadians(200.35))
+                .forward(3)
+                .back(3)
                 .build();
 
 
@@ -377,14 +365,11 @@ public class RedFarSide extends LinearOpMode {
 
         drive.setPoseEstimate(new Pose2d(fcX, fcY, getCorrectedHeading(Math.toRadians(navx.getFusedHeading()))));
         TrajectorySequence scoreFirstStack = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                .turn(Math.toRadians(180))
-                .forward(5)
-                .back(3)
-                .forward(3)
-                .lineToConstantHeading(new Vector2d(-40.85, -34.99))
-                .splineToConstantHeading(new Vector2d(-30.10, -59.99), Math.toRadians(-12.53))
-                .lineToConstantHeading(new Vector2d(26.61, -60.41))
-                .splineToConstantHeading(new Vector2d(35.69, -43.37), Math.toRadians(61.95))
+                .splineToConstantHeading(new Vector2d(-51.59, -28.54), Math.toRadians(21.71))
+                .splineToConstantHeading(new Vector2d(-29.79, -14.65), Math.toRadians(8.13))
+                .splineToConstantHeading(new Vector2d(4.65, -13.12), Math.toRadians(2.05))
+                .splineToConstantHeading(new Vector2d(36.59, -16.46), Math.toRadians(-34.05))
+                .splineToSplineHeading(new Pose2d(36.73, -42.56, Math.toRadians(180.00)), Math.toRadians(212.47))
                 .build();
 
             DESIRED_TAG_ID = 6;

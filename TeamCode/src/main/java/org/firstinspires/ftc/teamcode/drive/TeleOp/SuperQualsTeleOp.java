@@ -155,7 +155,7 @@ public class SuperQualsTeleOp extends LinearOpMode {
                // telemetry.addData("Bearing", "%3.0f degrees", desiredTag.ftcPose.bearing);
                 telemetry.addData("Yaw", "%3.0f degrees", desiredTag.ftcPose.yaw);
 
-                currentPose = cameraToRobotPose(desiredTag);
+                currentPose = frontCcameraToRobotPose(desiredTag);
 
                 Vector2d fcPose = getFCPositionIMU(desiredTag, currentPose, drive.getPoseEstimate().getHeading());
                 Pose2d fcPoseTag = getFCPositionTag(desiredTag, currentPose);
@@ -362,7 +362,7 @@ public class SuperQualsTeleOp extends LinearOpMode {
         // Create the vision portal by using a builder.
         if (USE_WEBCAM) {
             visionPortal = new VisionPortal.Builder()
-                    .setCamera(hardwareMap.get(WebcamName.class, "Webcam 2"))
+                    .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
                     .addProcessor(aprilTag)
                     .build();
         } else {
@@ -380,6 +380,20 @@ public class SuperQualsTeleOp extends LinearOpMode {
         // Adjust for camera offset and orientation
         double robotX = -tagX - 0;
         double robotY = -tagY - 9.0;
+
+        // Assuming your camera is inverted (180 degrees rotated)
+        double robotHeading = Math.toRadians(detection.ftcPose.yaw);  // Rotate by 180 degrees
+
+        return new Pose2d(robotX, robotY, robotHeading);
+    }
+
+    public static Pose2d frontCcameraToRobotPose(AprilTagDetection detection) {
+        double tagX = detection.ftcPose.x;
+        double tagY = detection.ftcPose.y;
+
+        // Adjust for camera offset and orientation
+        double robotX = -tagX - 0;
+        double robotY = -tagY - 6.3;
 
         // Assuming your camera is inverted (180 degrees rotated)
         double robotHeading = Math.toRadians(detection.ftcPose.yaw);  // Rotate by 180 degrees

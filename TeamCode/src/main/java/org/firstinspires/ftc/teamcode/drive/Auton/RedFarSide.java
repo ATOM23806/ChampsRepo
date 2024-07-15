@@ -340,14 +340,17 @@ public class RedFarSide extends LinearOpMode {
 
         intake.setPower(0);
         release.setPosition(0.8);
-        try {
-            Thread.sleep(800);
-        } catch (InterruptedException e){
-            System.out.println("Oops fucky wucky");
-        };
+
 
         TrajectorySequence firstStack = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                 .splineTo(new Vector2d(32.05, -12.92), Math.toRadians(170.31))
+                .addDisplacementMarker( () -> {
+
+                    rights.setPosition(0);
+                    lefts.setPosition(0);
+                    release.setPosition(0);
+                })
+
                 .splineTo(new Vector2d(-6.91, -12.36), Math.toRadians(180.00))
                 .splineToConstantHeading(new Vector2d(-35.27, -22.00), Math.toRadians(-83.29))
                 .addDisplacementMarker(() -> {
@@ -359,21 +362,30 @@ public class RedFarSide extends LinearOpMode {
                 .build();
 
 
-            DESIRED_TAG_ID = 8;
-            alignLogic();
+           // DESIRED_TAG_ID = 8;
+            //alignLogic();
 
 
         drive.setPoseEstimate(new Pose2d(fcX, fcY, getCorrectedHeading(Math.toRadians(navx.getFusedHeading()))));
         TrajectorySequence scoreFirstStack = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                 .splineToConstantHeading(new Vector2d(-51.59, -28.54), Math.toRadians(21.71))
+                .addDisplacementMarker(() -> {
+                    intake.setPower(0);
+                })
                 .splineToConstantHeading(new Vector2d(-29.79, -14.65), Math.toRadians(8.13))
                 .splineToConstantHeading(new Vector2d(4.65, -13.12), Math.toRadians(2.05))
+                .addDisplacementMarker( () -> {
+                    rights.setPosition(0.47);
+                    lefts.setPosition(0.47);
+                })
                 .splineToConstantHeading(new Vector2d(36.59, -16.46), Math.toRadians(-34.05))
                 .splineToSplineHeading(new Pose2d(36.73, -42.56, Math.toRadians(180.00)), Math.toRadians(212.47))
                 .build();
 
             DESIRED_TAG_ID = 6;
             alignLogic();
+
+            release.setPosition(.8);
 
 
 

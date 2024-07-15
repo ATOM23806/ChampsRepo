@@ -15,8 +15,8 @@ public class AprilTrajectory {
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15.5)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(-34.71, -62.5, Math.toRadians(90)))
-                                .strafeLeft(3)
+                        drive.trajectorySequenceBuilder(new Pose2d(45.73, -37.56, Math.toRadians(180.00)))
+                               /* .strafeLeft(3)
                                 .splineToSplineHeading(new Pose2d(-32.58, -35.16, Math.toRadians(0.00)), Math.toRadians(55.68))
 
                                 .back(3)
@@ -46,7 +46,20 @@ public class AprilTrajectory {
                                 .splineToConstantHeading(new Vector2d(-29.79, -14.65), Math.toRadians(8.13))
                                 .splineToConstantHeading(new Vector2d(4.65, -13.12), Math.toRadians(2.05))
                                 .splineToConstantHeading(new Vector2d(36.59, -16.46), Math.toRadians(-34.05))
-                                .splineToSplineHeading(new Pose2d(36.73, -42.56, Math.toRadians(180.00)), Math.toRadians(212.47))
+                                .splineToSplineHeading(new Pose2d(45.73, -37.56, Math.toRadians(180.00)), Math.toRadians(212.47)) */
+                                .splineTo(new Vector2d(32.05, -12.92), Math.toRadians(170.31))
+                                .splineTo(new Vector2d(-6.91, -12.36), Math.toRadians(180.00))
+                                .splineToConstantHeading(new Vector2d(-35.27, -22.00), Math.toRadians(-83.29))
+
+                                .splineToConstantHeading(new Vector2d(-58.00, -35.00), Math.toRadians(200.35))
+                                .forward(3)
+                                .back(3)
+
+                                .splineToConstantHeading(new Vector2d(-51.59, -28.54), Math.toRadians(21.71))
+                                .splineToConstantHeading(new Vector2d(-29.79, -14.65), Math.toRadians(8.13))
+                                .splineToConstantHeading(new Vector2d(4.65, -13.12), Math.toRadians(2.05))
+                                .splineToConstantHeading(new Vector2d(36.59, -16.46), Math.toRadians(-34.05))
+                                .splineToSplineHeading(new Pose2d(42.73, -32.56, Math.toRadians(180.00)), Math.toRadians(212.47))
 
                                 .build()
 

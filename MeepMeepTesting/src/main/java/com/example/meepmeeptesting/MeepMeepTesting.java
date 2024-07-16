@@ -15,35 +15,12 @@ public class MeepMeepTesting {
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15.5)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(-34.71, -62.5, Math.toRadians(90)))
-                                .forward(3)
-                                .strafeLeft(3)
-                                .splineToSplineHeading(new Pose2d(-33.78, -34.5, Math.toRadians(0.00)), Math.toRadians(-17.11),
-                                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                                        SampleMecanumDrive.getAccelerationConstraint(40))
-                                .forward(4)
-                                .back(5)
+                        drive.trajectorySequenceBuilder(new Pose2d(-60, -36, Math.toRadians(180)))
+                                .lineToConstantHeading(new Vector2d(-42.85, -16.60))
+                                .splineToConstantHeading(new Vector2d(-17.18, -11.20), Math.toRadians(0.00))
+                                .splineToConstantHeading(new Vector2d(36.59, -14.56), Math.toRadians(-3.58))
+                                .splineToConstantHeading(new Vector2d(38.02, -41.58), Math.toRadians(-83.86))
 
-                                .back(3)
-                                .waitSeconds(.4)
-
-                                .forward(1)
-                                .waitSeconds(.2)
-                                .back(6)
-
-                                .lineToConstantHeading(new Vector2d(-35.75, -10.20))
-                                .lineToSplineHeading(new Pose2d(27.69, -10.60, Math.toRadians(180.00)))
-                                //.turn(Math.toRadians(-45))
-                                .lineTo(new Vector2d(23.6, -28.4))
-
-                                .waitSeconds(1)
-                                .lineToConstantHeading(new Vector2d(49, -40),
-                                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                                        SampleMecanumDrive.getAccelerationConstraint(40))
-
-                                .back(5,
-                                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                                        SampleMecanumDrive.getAccelerationConstraint(40))
                                 .build()
 
 

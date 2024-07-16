@@ -56,21 +56,22 @@ public class RedFarSide extends LinearOpMode {
 
     private boolean USE_WEBCAM = true;
     public volatile boolean targetFound;
-    public static int DESIRED_TAG_ID = 4;
+    public static int DESIRED_TAG_ID = 6;
     private static double DESIRED_DISTANCE = 8;
+    public double rangeError;
     private double fcX, fcY;
 
-    public static double SPEED_GAIN = 0.023;
-    public static double STRAFE_GAIN = 0.015;
-    public static double TURN_GAIN = 0.014;
+    public static double SPEED_GAIN = 0.03;
+    public static double STRAFE_GAIN = 0.02;
+    public static double TURN_GAIN = 0.015;
 
-    public static double MAX_AUTO_SPEED = 0.25;
+    public static double MAX_AUTO_SPEED = 0.7;
     public static double MAX_AUTO_STRAFE = 0.25;
-    public static double MAX_AUTO_TURN = 0.15;
+    public static double MAX_AUTO_TURN = 0.4;
 
     public double driv, strafe, turn;
 
-    public volatile Pose2d fcPoseTag;
+    public volatile Pose2d fcPoseTag, currentTagPose;
     public double offset;
 
 
@@ -256,31 +257,35 @@ public class RedFarSide extends LinearOpMode {
                 .addDisplacementMarker(() -> {
                     intake.setPower(-0.3);
                 })
-                .splineToLinearHeading(new Pose2d(-40.97, -19.09, Math.toRadians(180.00)), Math.toRadians(101.31))
+                .splineToLinearHeading(new Pose2d(-42.97, -15.09, Math.toRadians(180.00)), Math.toRadians(101.31))
                 .addDisplacementMarker(() -> {
                     intake.setPower(0);
                 })
-                .splineToLinearHeading(new Pose2d(-37.19, -11.54, Math.toRadians(180.00)), Math.toRadians(26.04))
-                .splineToConstantHeading(new Vector2d(-14.92, -11.14), Math.toRadians(3.01))
-                .splineToConstantHeading(new Vector2d(30.83, -11.34), Math.toRadians(-4.27))
+                .splineToLinearHeading(new Pose2d(-37.19, -11.54, Math.toRadians(180.00)),
+                        Math.toRadians(26.04), SampleMecanumDrive.getVelocityConstraint(50, 40, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
+                .splineToConstantHeading(new Vector2d(-14.92, -11.14), Math.toRadians(3.01), SampleMecanumDrive.getVelocityConstraint(50, 40, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
+                .splineToConstantHeading(new Vector2d(30.83, -11.34), Math.toRadians(-4.27), SampleMecanumDrive.getVelocityConstraint(50, 40, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
                 .addDisplacementMarker( () -> {
 
                     rights.setPosition(0.47);
                     lefts.setPosition(0.47);
                 })
-                .splineToConstantHeading(new Vector2d(36.40, -27.65), Math.toRadians(259.99))
-                .splineToLinearHeading(new Pose2d(40.40, -41.97, Math.toRadians(180.00)), Math.toRadians(-74.59))
+                .splineToConstantHeading(new Vector2d(24.40, -27.65), Math.toRadians(259.99))
+                .splineToLinearHeading(new Pose2d(38.40, -41.5, Math.toRadians(180.00)), Math.toRadians(-74.59))
                 .build();
 
         TrajectorySequence finaltraj = null;
 
         switch (recordedPropPosition) {
             case LEFT:
-                finaltraj = trajleft;
-                DESIRED_TAG_ID = 4;
+                finaltraj = trajright;
+                DESIRED_TAG_ID = 6;
                 break;
             case MIDDLE:
-                finaltraj = trajCenter;
+                finaltraj = trajright;
                 break;
             case RIGHT:
                 finaltraj = trajright;
@@ -325,7 +330,7 @@ public class RedFarSide extends LinearOpMode {
         } */
 
 
-        alignLogic();
+        alignLogic(true);
 
         drive.setPoseEstimate(new Pose2d(fcX, fcY, getCorrectedHeading(Math.toRadians(navx.getFusedHeading()))));
             TrajectorySequence afterTag = drive.trajectorySequenceBuilder(
@@ -342,65 +347,95 @@ public class RedFarSide extends LinearOpMode {
         release.setPosition(0.8);
 
 
+        drive.setPoseEstimate(new Pose2d(51.62, -43.12, Math.toRadians(180.00)));
         TrajectorySequence firstStack = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                .splineTo(new Vector2d(32.05, -12.92), Math.toRadians(170.31))
+                .splineToConstantHeading(new Vector2d(13.68, -8.36), Math.toRadians(180.00), SampleMecanumDrive.getVelocityConstraint(40, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
                 .addDisplacementMarker( () -> {
-
                     rights.setPosition(0);
                     lefts.setPosition(0);
                     release.setPosition(0);
                 })
-
-                .splineTo(new Vector2d(-6.91, -12.36), Math.toRadians(180.00))
-                .splineToConstantHeading(new Vector2d(-35.27, -22.00), Math.toRadians(-83.29))
-                .addDisplacementMarker(() -> {
+                .splineToConstantHeading(new Vector2d(-37.27, -8.74), Math.toRadians(174.09), SampleMecanumDrive.getVelocityConstraint(40, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
+                .addDisplacementMarker( () -> {
                     intake.setPower(1);
                 })
-                .splineToConstantHeading(new Vector2d(-58.00, -35.00), Math.toRadians(200.35))
-                .forward(3)
-                .back(3)
+                .splineToConstantHeading(new Vector2d(-40.58, -36), Math.toRadians(239.44), SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(30))
+
                 .build();
+
+        drive.followTrajectorySequence(firstStack);
+
+        DESIRED_TAG_ID = 8;
+        alignLogic(false);
 
 
            // DESIRED_TAG_ID = 8;
             //alignLogic();
 
 
-        drive.setPoseEstimate(new Pose2d(fcX, fcY, getCorrectedHeading(Math.toRadians(navx.getFusedHeading()))));
+       //drive.setPoseEstimate(new Pose2d(fcX, fcY, getCorrectedHeading(Math.toRadians(navx.getFusedHeading()))));
+        drive.setPoseEstimate(new Pose2d(-52.4, -35, Math.toRadians(180)));
         TrajectorySequence scoreFirstStack = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                .splineToConstantHeading(new Vector2d(-51.59, -28.54), Math.toRadians(21.71))
-                .addDisplacementMarker(() -> {
+                .forward(8, SampleMecanumDrive.getVelocityConstraint(40, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
+                .back(1)
+                .forward(2)
+                .back(10)
+                .lineToConstantHeading(new Vector2d(-42.85, -16.60)
+            ,    SampleMecanumDrive.getVelocityConstraint(40, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
+                .addDisplacementMarker( () -> {
                     intake.setPower(0);
                 })
-                .splineToConstantHeading(new Vector2d(-29.79, -14.65), Math.toRadians(8.13))
-                .splineToConstantHeading(new Vector2d(4.65, -13.12), Math.toRadians(2.05))
+                .splineToConstantHeading(new Vector2d(-17.18, -11.20), Math.toRadians(0.00), SampleMecanumDrive.getVelocityConstraint(40, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
                 .addDisplacementMarker( () -> {
-                    rights.setPosition(0.47);
-                    lefts.setPosition(0.47);
+                    rights.setPosition(.47);
+                    lefts.setPosition(.47);
                 })
-                .splineToConstantHeading(new Vector2d(36.59, -16.46), Math.toRadians(-34.05))
-                .splineToSplineHeading(new Pose2d(36.73, -42.56, Math.toRadians(180.00)), Math.toRadians(212.47))
+                .splineToConstantHeading(new Vector2d(30.59, -14.56), Math.toRadians(-3.58), SampleMecanumDrive.getVelocityConstraint(40, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(40))
+                .splineToConstantHeading(new Vector2d(35.02, -36.58), Math.toRadians(-83.86), SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
+                        SampleMecanumDrive.getAccelerationConstraint(20))
+
                 .build();
 
-            DESIRED_TAG_ID = 6;
-            alignLogic();
+        drive.followTrajectorySequence(scoreFirstStack);
+
+        int error;
+        do {
+            error = 380 + rightlift.getCurrentPosition();
+            double power = 0.004 * error;
+            leftlift.setPower(power);
+            rightlift.setPower(power);
+            telemetry.addData("pos", rightlift.getCurrentPosition());
+            telemetry.update();
+        }
+        while (Math.abs(error) > 10);
+
+            DESIRED_TAG_ID = 5;
+            alignLogic(true);
+            drive.setPoseEstimate(new Pose2d(fcX, fcY, getCorrectedHeading(Math.toRadians(navx.getFusedHeading()))));
+            drive.followTrajectorySequence(afterTag);
 
             release.setPosition(.8);
 
+        sleep(2000);
 
-
-        TrajectorySequence fin = drive.trajectorySequenceBuilder(afterTag.end())
-                .forward(10)
-                .strafeRight(15)
-                .back(7)
-                .build();
 
         rights.setPosition(0.0);
         lefts.setPosition(0.0);
         release.setPosition(0);
 
+        requestOpModeStop();
 
-        drive.followTrajectorySequence(fin);
+
+
+
+       // drive.followTrajectorySequence(fin);
 
 
         while(!isStopRequested()) {
@@ -481,10 +516,16 @@ public class RedFarSide extends LinearOpMode {
         }
     }
 
-    private void alignLogic() {
+    private void alignLogic(boolean isBack) {
         while (opModeIsActive()) {
             targetFound = false;
             desiredTag = null;
+
+            if (isBack) {
+                visionPortal.setActiveCamera(aprilCam);
+            } else {
+                visionPortal.setActiveCamera(colorCam);
+            }
 
             // Step through the list of detected tags and look for a matching tag
             List<AprilTagDetection> currentDetections = aprilTag.getDetections();
@@ -511,24 +552,47 @@ public class RedFarSide extends LinearOpMode {
                 telemetry.addData("Bearing", "%3.0f degrees", desiredTag.ftcPose.bearing);
                 telemetry.addData("Yaw", "%3.0f degrees", desiredTag.ftcPose.yaw);
 
-                Pose2d currentPose = SuperQualsTeleOp.cameraToRobotPose(desiredTag);
+                if (isBack) {
 
-                Pose2d fcPoseTag = SuperQualsTeleOp.getFCPositionTag(desiredTag, currentPose);
+                    currentTagPose = SuperQualsTeleOp.cameraToRobotPose(desiredTag);
+
+                } else {
+                    currentTagPose = SuperQualsTeleOp.frontCcameraToRobotPose(desiredTag);
+
+                }
+
+                fcPoseTag = SuperQualsTeleOp.getFCPositionTag(desiredTag, currentTagPose);
+
                 fcX = fcPoseTag.getX();
                 fcY = fcPoseTag.getY();
 
 
                 // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
-                double rangeError = (desiredTag.ftcPose.range - DESIRED_DISTANCE);
+                if (isBack) {
+                    rangeError = (desiredTag.ftcPose.range - DESIRED_DISTANCE);
+                } else {
+                    rangeError = (desiredTag.ftcPose.range - 10);
+
+                }
                 double headingError = desiredTag.ftcPose.bearing;
                 double yawError = desiredTag.ftcPose.yaw;
 
-                if (rangeError < 2) break;
+                if (isBack) {
+                    if (rangeError < 2) break;
+                } else {
+                    if (rangeError < 2 && Math.abs(yawError) <= 3) break;
+                }
 
                 // Use the speed and turn "gains" to calculate how we want the robot to move.
-                driv = -Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
-                turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
-                strafe = -Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
+                if (isBack) {
+                    driv = -Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
+                    turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
+                    strafe = -Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
+                } else {
+                    driv = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
+                    turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
+                    strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
+                }
 
 
             } else if (!targetFound) {

@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.subsystems.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystems.DriveTrain;
 import org.firstinspires.ftc.teamcode.util.TramRed;
 import org.firstinspires.ftc.teamcode.subsystems.Slides;
 import org.firstinspires.ftc.teamcode.roadrunner.roadrunner.trajectories.TrajectorySequence;
@@ -36,7 +36,7 @@ public class RedClose extends LinearOpMode {
     Slides slides;
     @Override
     public void runOpMode() throws InterruptedException {
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        DriveTrain drive = new DriveTrain(hardwareMap);
         drive.setPoseEstimate(new Pose2d(10.1, -59.7, Math.toRadians(90)));
         rights = hardwareMap.get(Servo.class, "rA");
         lefts = hardwareMap.get(Servo.class, "lA");
@@ -117,8 +117,8 @@ public class RedClose extends LinearOpMode {
                     })
                     .lineToConstantHeading(new Vector2d(46, -30.40))
                     .back(6,
-                            SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                            SampleMecanumDrive.getAccelerationConstraint(40))
+                            DriveTrain.getVelocityConstraint(30, 30, 9.335),
+                            DriveTrain.getAccelerationConstraint(40))
 
                     .build();
 
@@ -154,8 +154,8 @@ public class RedClose extends LinearOpMode {
                         intake.setPower(0);
                     })
                     .back(6,
-                            SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                            SampleMecanumDrive.getAccelerationConstraint(40))
+                            DriveTrain.getVelocityConstraint(30, 30, 9.335),
+                            DriveTrain.getAccelerationConstraint(40))
 
                     .build();
 
@@ -186,11 +186,11 @@ public class RedClose extends LinearOpMode {
                     })
 
                     .splineToSplineHeading(new Pose2d(46.81, -41.50, Math.toRadians(180.00)), Math.toRadians(7.08),
-                            SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                            SampleMecanumDrive.getAccelerationConstraint(40))
+                            DriveTrain.getVelocityConstraint(30, 30, 9.335),
+                            DriveTrain.getAccelerationConstraint(40))
                     .back(6,
-                            SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                            SampleMecanumDrive.getAccelerationConstraint(40))
+                            DriveTrain.getVelocityConstraint(30, 30, 9.335),
+                            DriveTrain.getAccelerationConstraint(40))
 
                     .build();
 

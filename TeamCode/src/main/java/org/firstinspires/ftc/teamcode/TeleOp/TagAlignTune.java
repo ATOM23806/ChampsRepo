@@ -14,7 +14,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.Exposur
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.subsystems.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystems.DriveTrain;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 @TeleOp
 public class TagAlignTune extends LinearOpMode {
 
-    private SampleMecanumDrive driveTrain;
+    private DriveTrain driveTrain;
 
     public static double DESIRED_DISTANCE = 6; //  this is how close the camera should get to the target (inches)
 
@@ -51,7 +51,7 @@ public class TagAlignTune extends LinearOpMode {
 
     @Override public void runOpMode() {
 
-        driveTrain = new SampleMecanumDrive(hardwareMap);
+        driveTrain = new DriveTrain(hardwareMap);
         Telemetry telemetry = new MultipleTelemetry(this.telemetry, dashboard.getTelemetry());
         boolean targetFound     = false;    // Set to true when an AprilTag target is detected
         double  drive           = 0;        // Desired forward power/speed (-1 to +1)

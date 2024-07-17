@@ -4,13 +4,13 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.subsystems.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystems.DriveTrain;
 import org.firstinspires.ftc.teamcode.roadrunner.roadrunner.trajectories.TrajectorySequence;
 
 public class ExportSusla extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        DriveTrain drive = new DriveTrain(hardwareMap);
 
         TrajectorySequence trajCenter =  drive.trajectorySequenceBuilder(new Pose2d(51, -41.97, Math.toRadians(180.00)))
                 .splineTo(new Vector2d(32.05, -12.92), Math.toRadians(170.31))

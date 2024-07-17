@@ -26,7 +26,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.Exposur
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.subsystems.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystems.DriveTrain;
 import org.firstinspires.ftc.teamcode.TeleOp.SuperQualsTeleOp;
 import org.firstinspires.ftc.teamcode.util.TramRed;
 import org.firstinspires.ftc.teamcode.roadrunner.roadrunner.trajectories.TrajectorySequence;
@@ -43,7 +43,7 @@ public class RedFarSide extends LinearOpMode {
 
     private Servo rights, lefts;
     private CRServo intake;
-    private SampleMecanumDrive drive;
+    private DriveTrain drive;
 
     private VisionPortal visionPortal;
     public AprilTagProcessor aprilTag;
@@ -93,7 +93,7 @@ public class RedFarSide extends LinearOpMode {
         packet.fieldOverlay().drawImage("/images/centerstage.jpg", 0, 0, 144, 144);
         //packet.fieldOverlay().drawImage("/dash/powerplay.png", 0, 0, 144, 144);
         dashboard.sendTelemetryPacket(packet);
-        drive = new SampleMecanumDrive(hardwareMap);
+        drive = new DriveTrain(hardwareMap);
         startingPose = new Pose2d(-34.71, -62.5, Math.toRadians(90));
         drive.setPoseEstimate(startingPose);
         rights = hardwareMap.get(Servo.class, "rA");
@@ -195,8 +195,8 @@ public class RedFarSide extends LinearOpMode {
 
                 .back(3.5)
                 .splineToSplineHeading(new Pose2d(-33.81, -13, Math.toRadians(180.00)), Math.toRadians(0.00),
-                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                        DriveTrain.getVelocityConstraint(30, 30, 9.335),
+                        DriveTrain.getAccelerationConstraint(40))
 
                 .lineToConstantHeading(new Vector2d(30.89, -14.5))
                 .addDisplacementMarker( () -> {
@@ -214,8 +214,8 @@ public class RedFarSide extends LinearOpMode {
                 .strafeLeft(6)
 
                 .lineToSplineHeading(new Pose2d(-41.09, -12.68, Math.toRadians(270.00)),
-                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                        DriveTrain.getVelocityConstraint(30, 30, 9.335),
+                        DriveTrain.getAccelerationConstraint(40))
                 .strafeLeft(2)
 
 
@@ -240,8 +240,8 @@ public class RedFarSide extends LinearOpMode {
                 .splineToConstantHeading(new Vector2d(50.81, -31), Math.toRadians(264.81))
 
                 .back(7,
-                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                        DriveTrain.getVelocityConstraint(30, 30, 9.335),
+                        DriveTrain.getAccelerationConstraint(40))
 
                 .build();
 
@@ -261,12 +261,12 @@ public class RedFarSide extends LinearOpMode {
                     intake.setPower(0);
                 })
                 .splineToLinearHeading(new Pose2d(-37.19, -11.54, Math.toRadians(180.00)),
-                        Math.toRadians(26.04), SampleMecanumDrive.getVelocityConstraint(50, 40, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
-                .splineToConstantHeading(new Vector2d(-14.92, -11.14), Math.toRadians(3.01), SampleMecanumDrive.getVelocityConstraint(50, 40, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
-                .splineToConstantHeading(new Vector2d(30.83, -11.34), Math.toRadians(-4.27), SampleMecanumDrive.getVelocityConstraint(50, 40, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                        Math.toRadians(26.04), DriveTrain.getVelocityConstraint(50, 40, 9.335),
+                        DriveTrain.getAccelerationConstraint(40))
+                .splineToConstantHeading(new Vector2d(-14.92, -11.14), Math.toRadians(3.01), DriveTrain.getVelocityConstraint(50, 40, 9.335),
+                        DriveTrain.getAccelerationConstraint(40))
+                .splineToConstantHeading(new Vector2d(30.83, -11.34), Math.toRadians(-4.27), DriveTrain.getVelocityConstraint(50, 40, 9.335),
+                        DriveTrain.getAccelerationConstraint(40))
                 .addDisplacementMarker( () -> {
 
                     rights.setPosition(0.47);
@@ -335,8 +335,8 @@ public class RedFarSide extends LinearOpMode {
             TrajectorySequence afterTag = drive.trajectorySequenceBuilder(
                     drive.getPoseEstimate())
                     .back(10,
-                    SampleMecanumDrive.getVelocityConstraint(20, 30, 9.335),
-                    SampleMecanumDrive.getAccelerationConstraint(30))
+                    DriveTrain.getVelocityConstraint(20, 30, 9.335),
+                    DriveTrain.getAccelerationConstraint(30))
                     .build();
 
         drive.followTrajectorySequence(afterTag);
@@ -348,20 +348,20 @@ public class RedFarSide extends LinearOpMode {
 
         drive.setPoseEstimate(new Pose2d(51.62, -43.12, Math.toRadians(180.00)));
         TrajectorySequence firstStack = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                .splineToConstantHeading(new Vector2d(13.68, -8.36), Math.toRadians(180.00), SampleMecanumDrive.getVelocityConstraint(40, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                .splineToConstantHeading(new Vector2d(13.68, -8.36), Math.toRadians(180.00), DriveTrain.getVelocityConstraint(40, 30, 9.335),
+                        DriveTrain.getAccelerationConstraint(40))
                 .addDisplacementMarker( () -> {
                     rights.setPosition(0);
                     lefts.setPosition(0);
                     release.setPosition(0);
                 })
-                .splineToConstantHeading(new Vector2d(-37.27, -8.74), Math.toRadians(174.09), SampleMecanumDrive.getVelocityConstraint(40, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                .splineToConstantHeading(new Vector2d(-37.27, -8.74), Math.toRadians(174.09), DriveTrain.getVelocityConstraint(40, 30, 9.335),
+                        DriveTrain.getAccelerationConstraint(40))
                 .addDisplacementMarker( () -> {
                     intake.setPower(1);
                 })
-                .splineToConstantHeading(new Vector2d(-40.58, -36), Math.toRadians(239.44), SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(30))
+                .splineToConstantHeading(new Vector2d(-40.58, -36), Math.toRadians(239.44), DriveTrain.getVelocityConstraint(30, 30, 9.335),
+                        DriveTrain.getAccelerationConstraint(30))
 
                 .build();
 
@@ -378,27 +378,27 @@ public class RedFarSide extends LinearOpMode {
        //drive.setPoseEstimate(new Pose2d(fcX, fcY, getCorrectedHeading(Math.toRadians(navx.getFusedHeading()))));
         drive.setPoseEstimate(new Pose2d(-52.4, -35, Math.toRadians(180)));
         TrajectorySequence scoreFirstStack = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                .forward(8, SampleMecanumDrive.getVelocityConstraint(40, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                .forward(8, DriveTrain.getVelocityConstraint(40, 30, 9.335),
+                        DriveTrain.getAccelerationConstraint(40))
                 .back(1)
                 .forward(2)
                 .back(10)
                 .lineToConstantHeading(new Vector2d(-42.85, -16.60)
-            ,    SampleMecanumDrive.getVelocityConstraint(40, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+            ,    DriveTrain.getVelocityConstraint(40, 30, 9.335),
+                        DriveTrain.getAccelerationConstraint(40))
                 .addDisplacementMarker( () -> {
                     intake.setPower(0);
                 })
-                .splineToConstantHeading(new Vector2d(-17.18, -11.20), Math.toRadians(0.00), SampleMecanumDrive.getVelocityConstraint(40, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                .splineToConstantHeading(new Vector2d(-17.18, -11.20), Math.toRadians(0.00), DriveTrain.getVelocityConstraint(40, 30, 9.335),
+                        DriveTrain.getAccelerationConstraint(40))
                 .addDisplacementMarker( () -> {
                     rights.setPosition(.47);
                     lefts.setPosition(.47);
                 })
-                .splineToConstantHeading(new Vector2d(30.59, -14.56), Math.toRadians(-3.58), SampleMecanumDrive.getVelocityConstraint(40, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
-                .splineToConstantHeading(new Vector2d(35.02, -36.58), Math.toRadians(-83.86), SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(20))
+                .splineToConstantHeading(new Vector2d(30.59, -14.56), Math.toRadians(-3.58), DriveTrain.getVelocityConstraint(40, 30, 9.335),
+                        DriveTrain.getAccelerationConstraint(40))
+                .splineToConstantHeading(new Vector2d(35.02, -36.58), Math.toRadians(-83.86), DriveTrain.getVelocityConstraint(30, 30, 9.335),
+                        DriveTrain.getAccelerationConstraint(20))
 
                 .build();
 

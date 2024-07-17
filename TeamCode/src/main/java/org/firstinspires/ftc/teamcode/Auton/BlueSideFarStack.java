@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.subsystems.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystems.DriveTrain;
 import org.firstinspires.ftc.teamcode.util.TramBlue;
 import org.firstinspires.ftc.teamcode.subsystems.Slides;
 import org.firstinspires.ftc.teamcode.roadrunner.roadrunner.trajectories.TrajectorySequence;
@@ -30,7 +30,7 @@ public class BlueSideFarStack extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        DriveTrain drive = new DriveTrain(hardwareMap);
         drive.setPoseEstimate(new  Pose2d(-36.98, 61.77, Math.toRadians(-90)));
         rights = hardwareMap.get(Servo.class, "rA");
         lefts = hardwareMap.get(Servo.class, "lA");
@@ -225,18 +225,18 @@ public class BlueSideFarStack extends LinearOpMode {
                     release.setPosition(0);
                 })
                 .splineToConstantHeading(new Vector2d(7.47, 9.64), Math.toRadians(171.87),
-                        SampleMecanumDrive.getVelocityConstraint(50, 50, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(60))
+                        DriveTrain.getVelocityConstraint(50, 50, 9.335),
+                        DriveTrain.getAccelerationConstraint(60))
 
 
 
-                .lineToConstantHeading(new Vector2d(-51.68, 12),  SampleMecanumDrive.getVelocityConstraint(42, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(50))
+                .lineToConstantHeading(new Vector2d(-51.68, 12),  DriveTrain.getVelocityConstraint(42, 30, 9.335),
+                        DriveTrain.getAccelerationConstraint(50))
 
 
                 .lineToConstantHeading(new Vector2d(-64.7, 21),
-                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                        DriveTrain.getVelocityConstraint(30, 30, 9.335),
+                        DriveTrain.getAccelerationConstraint(40))
 
                 .addDisplacementMarker(() -> {
                     flick.setPosition(.709);

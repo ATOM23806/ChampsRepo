@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.subsystems.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystems.DriveTrain;
 import org.firstinspires.ftc.teamcode.util.TramBlue;
 import org.firstinspires.ftc.teamcode.subsystems.Slides;
 import org.firstinspires.ftc.teamcode.roadrunner.roadrunner.trajectories.TrajectorySequence;
@@ -30,7 +30,7 @@ public class BlueClose extends LinearOpMode {
     Slides slides;
     @Override
     public void runOpMode() throws InterruptedException {
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        DriveTrain drive = new DriveTrain(hardwareMap);
         drive.setPoseEstimate(new Pose2d(11.3, 59.7, Math.toRadians(-90)));
         rights = hardwareMap.get(Servo.class, "rA");
         lefts = hardwareMap.get(Servo.class, "lA");
@@ -111,8 +111,8 @@ public class BlueClose extends LinearOpMode {
                     lefts.setPosition(0.47);
                 })
                 .lineToConstantHeading(new Vector2d(50.81, 25.5),
-                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                        DriveTrain.getVelocityConstraint(30, 30, 9.335),
+                        DriveTrain.getAccelerationConstraint(40))
 
                 .build();
 
@@ -143,8 +143,8 @@ public class BlueClose extends LinearOpMode {
                     lefts.setPosition(0.47);
                 })
                 .lineToConstantHeading(new Vector2d(50,35.7),
-                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                        DriveTrain.getVelocityConstraint(30, 30, 9.335),
+                        DriveTrain.getAccelerationConstraint(40))
 
                 .build();
 
@@ -173,8 +173,8 @@ public class BlueClose extends LinearOpMode {
                     lefts.setPosition(0.47);
                 })
                 .splineToSplineHeading(new Pose2d(49.82, 39.6, Math.toRadians(180.00)), Math.toRadians(-17.16),
-                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                        DriveTrain.getVelocityConstraint(30, 30, 9.335),
+                        DriveTrain.getAccelerationConstraint(40))
 
                 .build();
 
@@ -215,11 +215,11 @@ public class BlueClose extends LinearOpMode {
                     release.setPosition(0);
                 })
                 .lineToConstantHeading(new Vector2d( 39.2,60),
-                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                        DriveTrain.getVelocityConstraint(30, 30, 9.335),
+                        DriveTrain.getAccelerationConstraint(40))
                 .lineToConstantHeading(new Vector2d(60,60),
-                        SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                        DriveTrain.getVelocityConstraint(30, 30, 9.335),
+                        DriveTrain.getAccelerationConstraint(40))
 
                 .build();
 

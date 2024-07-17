@@ -20,7 +20,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.Exposur
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.subsystems.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystems.DriveTrain;
 import org.firstinspires.ftc.teamcode.TeleOp.SuperQualsTeleOp;
 import org.firstinspires.ftc.teamcode.roadrunner.roadrunner.trajectories.TrajectorySequence;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 @Autonomous
 public class BareAuto extends LinearOpMode {
 
-    private SampleMecanumDrive driveTrain;
+    private DriveTrain driveTrain;
     private Servo release;
     private DcMotor leftlift, rightlift;
     private Servo rights, lefts;
@@ -63,7 +63,7 @@ public class BareAuto extends LinearOpMode {
 
     @Override public void runOpMode() {
 
-        driveTrain = new SampleMecanumDrive(hardwareMap);
+        driveTrain = new DriveTrain(hardwareMap);
         Pose2d startingPose = new Pose2d(10.1, -59.7, Math.toRadians(90));
         driveTrain.setPoseEstimate(startingPose);
         rights = hardwareMap.get(Servo.class, "rA");
@@ -177,8 +177,8 @@ public class BareAuto extends LinearOpMode {
             moveRobot(drive, strafe, turn);
         }
         TrajectorySequence afterTag = driveTrain.trajectorySequenceBuilder(driveTrain.getPoseEstimate()).back(5,
-                SampleMecanumDrive.getVelocityConstraint(30, 30, 9.335),
-                SampleMecanumDrive.getAccelerationConstraint(40)).build();
+                DriveTrain.getVelocityConstraint(30, 30, 9.335),
+                DriveTrain.getAccelerationConstraint(40)).build();
         driveTrain.followTrajectorySequence(afterTag);
 
         release.setPosition(0.8);

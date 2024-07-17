@@ -17,6 +17,8 @@ import com.acmerobotics.roadrunner.trajectory.constraints.MinVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAccelerationConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
+import com.github.i_n_t_robotics.zhonyas.navx.AHRS;
+import com.qualcomm.hardware.kauailabs.NavxMicroNavigationSensor;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -69,7 +71,6 @@ public class DriveTrain extends MecanumDrive {
 
     private TrajectorySequenceRunner trajectorySequenceRunner;
 
-
     private static final TrajectoryVelocityConstraint VEL_CONSTRAINT = getVelocityConstraint(MAX_VEL, MAX_ANG_VEL, TRACK_WIDTH);
     private static final TrajectoryAccelerationConstraint ACCEL_CONSTRAINT = getAccelerationConstraint(MAX_ACCEL);
 
@@ -83,7 +84,10 @@ public class DriveTrain extends MecanumDrive {
 
     private List<Integer> lastEncPositions = new ArrayList<>();
     private List<Integer> lastEncVels = new ArrayList<>();
+    private AHRS navx;
+    private double offset;
 
+    //TODO Make private
     public DriveTrain(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
 
@@ -98,10 +102,11 @@ public class DriveTrain extends MecanumDrive {
         }
 
         // TODO: adjust the names of the following hardware devices to match your configuration
-        imu = hardwareMap.get(IMU.class, "imu");
-        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                DriveConstants.LOGO_FACING_DIR, DriveConstants.USB_FACING_DIR));
-        imu.initialize(parameters);
+        navx = AHRS.getInstance(hardwareMap.get(NavxMicroNavigationSensor.class, "navx"),
+                AHRS.DeviceDataType.kProcessedData);
+
+        offset = Math.toRadians(navx.getFusedHeading());
+
 
         leftFront = hardwareMap.get(DcMotorEx.class, "Frontleft");
         leftRear = hardwareMap.get(DcMotorEx.class, "Backleft");
@@ -317,5 +322,24 @@ public class DriveTrain extends MecanumDrive {
 
     public static TrajectoryAccelerationConstraint getAccelerationConstraint(double maxAccel) {
         return new ProfileAccelerationConstraint(maxAccel);
+    }
+
+    public double getYaw() {
+        return navx.getYaw();
+    }
+
+    public double getCorrectedHeading(double currentHeading) {
+        double correctedHeading = offset - currentHeading;
+        if (correctedHeading < 0) {
+            correctedHeading += 2 * Math.PI;
+        } else if (correctedHeading >= 2 * Math.PI) {
+            correctedHeading -= 2 * Math.PI;
+        }
+        return correctedHeading;
+    }
+
+    public double getFusedHeading() {
+        return getCorrectedHeading(Math.toRadians(navx.getFusedHeading()));
+
     }
 }

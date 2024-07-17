@@ -13,4 +13,10 @@ object Constants {
         const val RELEASE_OPEN = 0.8
         const val RELEASE_CLOSE = 0
     }
+
+    object SlideConstants {
+        const val LEFT_LIFT = "leftlift"
+        const val RIGHT_LIFT = "rightlift"
+
+    }
 }

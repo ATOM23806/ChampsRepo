@@ -1,49 +1,44 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-
-import com.acmerobotics.dashboard.config.Config;
-
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.subsystems.Constants.SlideConstants;
 
-@Config
-public final class Slides {
-    private DcMotor leftlift,rightlift;
-    ArmBucket arm;
 
-    public Slides(HardwareMap hw) {
-        leftlift = hw.get(DcMotor.class, "leftlift");
-        rightlift = hw.get(DcMotor.class, "rightlift");
+public class Slides {
+
+    private final DcMotorEx leftlift, rightlift;
+
+    private static volatile Slides instance = null;
+
+    public static Slides getInstance(HardwareMap map) {
+        if (instance == null) {
+            //TODO try just "this" as well
+            synchronized (Slides.class) {
+                if (instance == null) {
+                    instance = new Slides(map);
+                }
+            }
+        }
+        return instance;
+    }
+
+    private Slides(HardwareMap hw) {
+        leftlift = hw.get(DcMotorEx.class, SlideConstants.LEFT_LIFT);
+        rightlift = hw.get(DcMotorEx.class, SlideConstants.RIGHT_LIFT);
 
         rightlift.setDirection(DcMotorSimple.Direction.REVERSE);
-        arm = new ArmBucket(hw);
     }
 
     public void resetEnc() {
-        leftlift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightlift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftlift.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        rightlift.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
 
-        leftlift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightlift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-    }
-
-    public void autoSlides(int target) {
-        leftlift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightlift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        leftlift.setPower(1);
-        rightlift.setPower(1);
-        leftlift.setTargetPosition(0);
-        rightlift.setTargetPosition(0);
-
-        leftlift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightlift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        leftlift.setTargetPosition(target);
-        rightlift.setTargetPosition(target);
+        leftlift.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        rightlift.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     int lastError = 0;
@@ -75,13 +70,8 @@ public final class Slides {
     }
 
 
-
-
-    public void setZeroPower() {
+    public void stop() {
         rightlift.setPower(0);
         leftlift.setPower(0);
     }
-
-
-
 }
